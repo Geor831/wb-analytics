@@ -169,7 +169,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.2</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.3</div>
 </div>
 
 <!-- Модальные окна -->
@@ -605,7 +605,7 @@
                 articleStatus.style.color = '#2563eb';
                 try {
                     // Прокси для обхода CORS
-                    const proxy = 'https://api.allorigins.win/raw?url=';
+                    const proxy = 'https://corsproxy.io/?';
                     const detailUrl = proxy + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
                     const detailResp = await fetch(detailUrl);
                     if (!detailResp.ok) throw new Error('Не удалось получить данные по товару');
@@ -732,7 +732,7 @@
 
             async function fetchWildberriesData(query) {
                 try {
-                    const proxy = 'https://api.allorigins.win/raw?url=';
+                    const proxy = 'https://corsproxy.io/?';
                     const url = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`);
                     const resp = await fetch(url);
                     if (!resp.ok) throw new Error('Ошибка API Wildberries');
