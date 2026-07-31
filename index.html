@@ -113,7 +113,7 @@
     <div class="main-layout">
         <!-- Левая панель: новые названия -->
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Разбор отзывов</div>
+            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика товара</div>
             <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшить карточку</div>
             <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Продавать дороже</div>
             <div class="sidebar-item" data-tab="competitors"><span class="icon">🏆</span> Конкуренты</div>
@@ -131,10 +131,10 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.4</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.5</div>
 </div>
 
-<!-- Модальные окна (регистрация, история) -->
+<!-- Модальные окна -->
 <div class="modal" id="authModal">
     <div class="modal-content">
         <h2 id="authModalTitle">Вход</h2>
@@ -209,9 +209,9 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    // ---------- НОВЫЕ НАЗВАНИЯ И ПРИВЕТСТВИЯ ----------
+    // ---------- НОВЫЕ НАЗВАНИЯ ----------
     const chatConfig = {
-        analytics: { name: 'Разбор отзывов', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
+        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
         improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
         teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
         competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
