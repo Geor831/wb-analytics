@@ -5,698 +5,286 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f1f5f9;
-            color: #1e293b;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1300px;
-            width: 100%;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.06);
-            display: flex;
-            flex-direction: column;
-            height: 95vh;
-            max-height: 1000px;
-            overflow: hidden;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            flex-shrink: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
+        .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
+        h1 span { color: #2563eb; }
+        .subtitle { color: #64748b; font-size: 14px; }
+        .auth-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .auth-bar .user-name { font-weight: 600; color: #2563eb; }
+        .auth-bar .btn-outline { background: transparent; border: 1px solid #2563eb; color: #2563eb; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .auth-bar .btn-outline:hover { background: #2563eb; color: white; }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-        .logo img {
-            height: 40px;
-            width: auto;
-        }
-        .logo-text {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .logo-text span {
-            color: #2563eb;
-        }
-        .logo-sub {
-            font-size: 12px;
-            color: #64748b;
-        }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 12px 0; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; font-size: 14px; color: #475569; }
+        .sidebar-item:hover { background: #e2e8f0; color: #1e293b; }
+        .sidebar-item.active { background: #eff6ff; color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
+        .sidebar-item .icon { font-size: 18px; width: 28px; text-align: center; }
 
-        .auth-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .auth-bar .user-name {
-            font-weight: 600;
-            color: #2563eb;
-        }
-        .auth-bar .btn-outline {
-            background: transparent;
-            border: 1px solid #2563eb;
-            color: #2563eb;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .auth-bar .btn-outline:hover {
-            background: #2563eb;
-            color: white;
-        }
+        .chat-panel { flex: 1; display: flex; flex-direction: column; padding: 16px; background: #f8fafc; overflow: hidden; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+        .chat-header .title { font-weight: 600; font-size: 18px; }
+        .chat-header .btn-group { display: flex; gap: 8px; }
+        .chat-header .btn-new-chat { background: #e2e8f0; border: none; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; color: #1e293b; }
+        .chat-header .btn-new-chat:hover { background: #2563eb; color: white; }
 
-        .main-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        .sidebar {
-            width: 280px;
-            background: #f8fafc;
-            border-right: 1px solid #e2e8f0;
-            padding: 12px 0;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: 0.2s;
-            border-left: 3px solid transparent;
-            font-size: 14px;
-            color: #475569;
-        }
-        .sidebar-item:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-        .sidebar-item.active {
-            background: #eff6ff;
-            color: #2563eb;
-            border-left-color: #2563eb;
-            font-weight: 600;
-        }
-        .sidebar-item .icon {
-            font-size: 18px;
-            width: 28px;
-            text-align: center;
-        }
+        .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 8px; padding-right: 8px; }
+        .chat-message { margin-bottom: 12px; display: flex; flex-direction: column; }
+        .chat-message.user { align-items: flex-end; }
+        .chat-message.ai { align-items: flex-start; }
+        .chat-message .bubble { max-width: 85%; padding: 12px 18px; border-radius: 16px; word-wrap: break-word; line-height: 1.6; font-size: 15px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .chat-message.user .bubble { background: #2563eb; color: white; border-bottom-right-radius: 4px; }
+        .chat-message.ai .bubble { background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; }
+        .chat-message.ai .bubble .source { font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px solid #d1d5db; padding-top: 6px; }
 
-        .chat-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 16px;
-            background: #f8fafc;
-            overflow: hidden;
-        }
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            flex-shrink: 0;
-        }
-        .chat-header .title {
-            font-weight: 600;
-            font-size: 18px;
-        }
-        .chat-header .btn-group {
-            display: flex;
-            gap: 8px;
-        }
-        .chat-header .btn-new-chat {
-            background: #e2e8f0;
-            border: none;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #1e293b;
-        }
-        .chat-header .btn-new-chat:hover {
-            background: #2563eb;
-            color: white;
-        }
+        .bubble h3 { font-size: 17px; margin: 16px 0 8px 0; color: #0f172a; }
+        .bubble h3:first-child { margin-top: 0; }
+        .bubble ul { margin: 6px 0 12px 20px; padding-left: 6px; }
+        .bubble li { margin-bottom: 4px; }
+        .bubble strong { color: #0f172a; }
+        .bubble .positive { color: #16a34a; }
+        .bubble .negative { color: #dc2626; }
+        .bubble table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .bubble table th { background: #2563eb; color: white; font-weight: 600; padding: 8px 12px; text-align: left; }
+        .bubble table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+        .bubble table tr:nth-child(even) { background: #f8fafc; }
+        .bubble table tr:hover { background: #f1f5f9; }
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 8px;
-            padding-right: 8px;
-        }
-        .chat-message {
-            margin-bottom: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-message.user {
-            align-items: flex-end;
-        }
-        .chat-message.ai {
-            align-items: flex-start;
-        }
-        .chat-message .bubble {
-            max-width: 85%;
-            padding: 12px 18px;
-            border-radius: 16px;
-            word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 15px;
-            background: white;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        }
-        .chat-message.user .bubble {
-            background: #2563eb;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        .chat-message.ai .bubble {
-            background: #e2e8f0;
-            color: #1e293b;
-            border-bottom-left-radius: 4px;
-        }
-        .chat-message.ai .bubble .source {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 8px;
-            border-top: 1px solid #d1d5db;
-            padding-top: 6px;
-        }
+        .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px 0; }
+        .examples .chip { background: #e2e8f0; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #1e293b; cursor: pointer; transition: 0.2s; border: none; white-space: nowrap; }
+        .examples .chip:hover { background: #2563eb; color: white; }
 
-        .bubble h3 {
-            font-size: 17px;
-            margin: 16px 0 8px 0;
-            color: #0f172a;
-        }
-        .bubble h3:first-child {
-            margin-top: 0;
-        }
-        .bubble ul {
-            margin: 6px 0 12px 20px;
-            padding-left: 6px;
-        }
-        .bubble li {
-            margin-bottom: 4px;
-        }
-        .bubble strong {
-            color: #0f172a;
-        }
-        .bubble .positive {
-            color: #16a34a;
-        }
-        .bubble .negative {
-            color: #dc2626;
-        }
-        .bubble table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0;
-            font-size: 14px;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        }
-        .bubble table th {
-            background: #2563eb;
-            color: white;
-            font-weight: 600;
-            padding: 8px 12px;
-            text-align: left;
-        }
-        .bubble table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .bubble table tr:nth-child(even) {
-            background: #f8fafc;
-        }
-        .bubble table tr:hover {
-            background: #f1f5f9;
-        }
+        .chat-input-area { display: flex; gap: 10px; align-items: flex-end; background: white; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); flex-shrink: 0; }
+        .chat-input-area textarea { flex: 1; border: none; padding: 8px 0; resize: none; font-family: inherit; font-size: 14px; outline: none; min-height: 40px; max-height: 120px; }
+        .chat-input-area .btn { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .chat-input-area .btn:hover { background: #1d4ed8; }
+        .chat-input-area .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .examples {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin: 4px 0 8px 0;
-        }
-        .examples .chip {
-            background: #e2e8f0;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            color: #1e293b;
-            cursor: pointer;
-            transition: 0.2s;
-            border: none;
-            white-space: nowrap;
-        }
-        .examples .chip:hover {
-            background: #2563eb;
-            color: white;
-        }
+        .file-upload-area { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .file-upload-area .label { background: #e2e8f0; padding: 6px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .file-upload-area .label:hover { background: #cbd5e1; }
+        .file-upload-area input[type="file"] { display: none; }
+        .file-upload-area .file-name { font-size: 13px; color: #475569; }
 
-        .chat-input-area {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            background: white;
-            border-radius: 12px;
-            padding: 8px 12px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-            flex-shrink: 0;
-        }
-        .chat-input-area textarea {
-            flex: 1;
-            border: none;
-            padding: 8px 0;
-            resize: none;
-            font-family: inherit;
-            font-size: 14px;
-            outline: none;
-            min-height: 40px;
-            max-height: 120px;
-        }
-        .chat-input-area .btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .chat-input-area .btn:hover {
-            background: #1d4ed8;
-        }
-        .chat-input-area .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .typing-indicator { display: inline-block; background: #e2e8f0; padding: 8px 16px; border-radius: 16px; color: #1e293b; font-size: 14px; }
+        .typing-indicator span { display: inline-block; animation: blink 1.4s infinite both; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
-        .file-upload-area {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .file-upload-area .label {
-            background: #e2e8f0;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .file-upload-area .label:hover {
-            background: #cbd5e1;
-        }
-        .file-upload-area input[type="file"] {
-            display: none;
-        }
-        .file-upload-area .file-name {
-            font-size: 13px;
-            color: #475569;
-        }
+        .footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 8px 0; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
 
-        .typing-indicator {
-            display: inline-block;
-            background: #e2e8f0;
-            padding: 8px 16px;
-            border-radius: 16px;
-            color: #1e293b;
-            font-size: 14px;
-        }
-        .typing-indicator span {
-            display: inline-block;
-            animation: blink 1.4s infinite both;
-        }
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        @keyframes blink {
-            0% {
-                opacity: 0.2;
-            }
-            20% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0.2;
-            }
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 48px rgba(0,0,0,0.2); }
+        .modal-content h2 { margin-bottom: 16px; }
+        .modal-content input[type="text"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; margin-bottom: 12px; }
+        .modal-content .history-item { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .modal-content .history-item:hover { background: #f1f5f9; }
+        .modal-content .history-item .date { font-size: 13px; color: #64748b; }
+        .modal-content .history-item .title { font-size: 14px; color: #1e293b; font-weight: 500; }
+        .modal-content .history-item .date { white-space: nowrap; margin-left: 10px; }
+        .modal-content .group-header { font-weight: 600; color: #2563eb; margin: 12px 0 6px 0; font-size: 14px; }
 
-        .footer {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 12px;
-            padding: 8px 0;
-            border-top: 1px solid #e2e8f0;
-            flex-shrink: 0;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
-        }
-        .modal-content h2 {
-            margin-bottom: 16px;
-        }
-        .modal-content input[type="text"] {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-        .modal-content .history-item {
-            padding: 10px 14px;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal-content .history-item:hover {
-            background: #f1f5f9;
-        }
-        .modal-content .history-item .date {
-            font-size: 13px;
-            color: #64748b;
-        }
-        .modal-content .history-item .title {
-            font-size: 14px;
-            color: #1e293b;
-            font-weight: 500;
-        }
-        .modal-content .history-item .date {
-            white-space: nowrap;
-            margin-left: 10px;
-        }
-        .modal-content .group-header {
-            font-weight: 600;
-            color: #2563eb;
-            margin: 12px 0 6px 0;
-            font-size: 14px;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #94a3b8;
-            color: #475569;
-            padding: 6px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-        .btn-outline:hover {
-            background: #e2e8f0;
-        }
+        .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-outline:hover { background: #e2e8f0; }
 
         @media (max-width: 700px) {
-            .sidebar {
-                width: 100%;
-                max-height: 160px;
-                border-right: none;
-                border-bottom: 1px solid #e2e8f0;
-                flex-shrink: 0;
-            }
-            .main-layout {
-                flex-direction: column;
-            }
-            .container {
-                height: 98vh;
-                max-height: none;
-            }
-            .chat-panel {
-                padding: 10px;
-            }
-            .logo img {
-                height: 30px;
-            }
-            .logo-text {
-                font-size: 18px;
-            }
-            .logo-sub {
-                font-size: 10px;
-            }
+            .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+            .main-layout { flex-direction: column; }
+            .container { height: 98vh; max-height: none; }
+            .chat-panel { padding: 10px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <a href="/" class="logo">
-                <img src="logo.svg" alt="WB.Analytics">
-                <div>
-                    <div class="logo-text">WB.<span>Analytics</span></div>
-                    <div class="logo-sub">умный помощник селлера</div>
-                </div>
-            </a>
-            <div class="auth-bar" id="authBar"></div>
-        </header>
+<div class="container">
+    <header>
+        <div>
+            <h1>WB.<span>Analytics</span></h1>
+            <div class="subtitle">12 умных помощников</div>
+        </div>
+        <div class="auth-bar" id="authBar"></div>
+    </header>
 
-        <div class="main-layout">
-            <!-- Левая панель: список чатов -->
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика товара</div>
-                <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшить карточку</div>
-                <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Продавать дороже</div>
-                <div class="sidebar-item" data-tab="competitors"><span class="icon">🏆</span> Конкуренты</div>
-                <div class="sidebar-item" data-tab="replies"><span class="icon">✍️</span> Ответы на отзывы</div>
-                <div class="sidebar-item" data-tab="unit"><span class="icon">📈</span> Экономика товара</div>
-                <div class="sidebar-item" data-tab="marketing"><span class="icon">💡</span> Идеи продвижения</div>
-                <div class="sidebar-item" data-tab="stock"><span class="icon">📦</span> Прогноз запасов</div>
-                <div class="sidebar-item" data-tab="naming"><span class="icon">🎯</span> Названия и слоганы</div>
-                <div class="sidebar-item" data-tab="niche"><span class="icon">🔍</span> Поиск ниш</div>
-                <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка товара</div>
-                <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поиск поставщиков</div>
-            </div>
-
-            <!-- Правая панель: активный чат -->
-            <div class="chat-panel" id="chatPanel"></div>
+    <div class="main-layout">
+        <!-- Левая панель: новые названия -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика товара</div>
+            <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшить карточку</div>
+            <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Продавать дороже</div>
+            <div class="sidebar-item" data-tab="competitors"><span class="icon">🏆</span> Конкуренты</div>
+            <div class="sidebar-item" data-tab="replies"><span class="icon">✍️</span> Ответы на отзывы</div>
+            <div class="sidebar-item" data-tab="unit"><span class="icon">📈</span> Экономика товара</div>
+            <div class="sidebar-item" data-tab="marketing"><span class="icon">💡</span> Идеи продвижения</div>
+            <div class="sidebar-item" data-tab="stock"><span class="icon">📦</span> Прогноз запасов</div>
+            <div class="sidebar-item" data-tab="naming"><span class="icon">🎯</span> Названия и слоганы</div>
+            <div class="sidebar-item" data-tab="niche"><span class="icon">🔍</span> Поиск ниш</div>
+            <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка товара</div>
+            <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поиск поставщиков</div>
         </div>
 
-        <div class="footer">Бесплатный инструмент для селлеров. Версия 9.6</div>
+        <!-- Правая панель -->
+        <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <!-- Модальные окна -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <h2 id="authModalTitle">Вход</h2>
-            <form id="authForm">
-                <label for="authLogin">Логин</label>
-                <input type="text" id="authLogin" placeholder="Введите логин" required>
-                <label for="authPassword">Пароль</label>
-                <input type="password" id="authPassword" placeholder="Введите пароль" required>
-                <button type="submit" class="btn" id="authSubmitBtn">Войти</button>
-            </form>
-            <div class="switch-link">
-                <span id="authSwitchText">Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a></span>
-            </div>
-            <div style="margin-top:10px; text-align:center;">
-                <button class="btn-outline" id="authCloseBtn">Закрыть</button>
-            </div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.5</div>
+</div>
+
+<!-- Модальные окна -->
+<div class="modal" id="authModal">
+    <div class="modal-content">
+        <h2 id="authModalTitle">Вход</h2>
+        <form id="authForm">
+            <label for="authLogin">Логин</label>
+            <input type="text" id="authLogin" placeholder="Введите логин" required>
+            <label for="authPassword">Пароль</label>
+            <input type="password" id="authPassword" placeholder="Введите пароль" required>
+            <button type="submit" class="btn" id="authSubmitBtn">Войти</button>
+        </form>
+        <div class="switch-link">
+            <span id="authSwitchText">Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a></span>
+        </div>
+        <div style="margin-top:10px; text-align:center;">
+            <button class="btn-outline" id="authCloseBtn">Закрыть</button>
         </div>
     </div>
+</div>
 
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
-            <h2>📂 История чата</h2>
-            <input type="text" id="historySearch" placeholder="🔍 Поиск по диалогам...">
-            <div id="historyList"></div>
-            <div style="margin-top:16px; text-align:center;">
-                <button class="btn-outline" id="historyCloseBtn">Закрыть</button>
-            </div>
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <h2>📂 История чата</h2>
+        <input type="text" id="historySearch" placeholder="🔍 Поиск по диалогам...">
+        <div id="historyList"></div>
+        <div style="margin-top:16px; text-align:center;">
+            <button class="btn-outline" id="historyCloseBtn">Закрыть</button>
         </div>
     </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js">
-    </script>
-    <script>
-        (function() {
-            'use strict';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+(function() {
+    'use strict';
 
-            const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
+    const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
 
-            // ---------- ПОЛЬЗОВАТЕЛЬ ----------
-            const USERS_KEY = 'wb_users';
-            const SESSION_KEY = 'wb_session';
+    // ---------- ПОЛЬЗОВАТЕЛЬ ----------
+    const USERS_KEY = 'wb_users';
+    const SESSION_KEY = 'wb_session';
 
-            function getUsers() {
-                try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; }
-            }
+    function getUsers() {
+        try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; }
+    }
+    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    function getSession() {
+        try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+    }
+    function setSession(username) { localStorage.setItem(SESSION_KEY, JSON.stringify({ username })); }
+    function clearSession() { localStorage.removeItem(SESSION_KEY); }
 
-            function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    let currentUser = null;
+    const session = getSession();
+    if (session && session.username) {
+        const users = getUsers();
+        if (users[session.username]) {
+            currentUser = session.username;
+        } else {
+            clearSession();
+        }
+    }
 
-            function getSession() {
-                try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
-            }
+    // ---------- ХРАНЕНИЕ ИСТОРИИ ----------
+    function getHistoryKey(tabName) {
+        return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
+    }
 
-            function setSession(username) { localStorage.setItem(SESSION_KEY, JSON.stringify({ username })); }
+    function getChatHistory(tabName) {
+        try { return JSON.parse(localStorage.getItem(getHistoryKey(tabName))) || []; } catch { return []; }
+    }
+    function saveChatHistory(tabName, messages) {
+        localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
+    }
 
-            function clearSession() { localStorage.removeItem(SESSION_KEY); }
+    // ---------- НОВЫЕ НАЗВАНИЯ ----------
+    const chatConfig = {
+        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
+        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
+        teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
+        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
+        replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
+        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – я мгновенно рассчитаю прибыль и маржинальность.' },
+        marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
+        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
+        naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
+        niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Напишите запрос для поиска ниши.' },
+        packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
+        suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
+    };
 
-            let currentUser = null;
-            const session = getSession();
-            if (session && session.username) {
-                const users = getUsers();
-                if (users[session.username]) {
-                    currentUser = session.username;
-                } else {
-                    clearSession();
+    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ----------
+    function renderMessages(tabName, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const history = getChatHistory(tabName);
+        container.innerHTML = '';
+        history.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = `chat-message ${msg.role}`;
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (msg.role === 'ai') {
+                let content = formatAIResponse(msg.content);
+                if (msg.source) {
+                    content += `<div class="source">📎 Источник: ${msg.source}</div>`;
                 }
+                bubble.innerHTML = content;
+            } else {
+                bubble.textContent = msg.content;
             }
+            div.appendChild(bubble);
+            container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+    }
 
-            // ---------- ХРАНЕНИЕ ИСТОРИИ ----------
-            function getHistoryKey(tabName) {
-                return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
+    function addMessage(tabName, containerId, role, content, source) {
+        const history = getChatHistory(tabName);
+        history.push({ role, content, source: source || null });
+        saveChatHistory(tabName, history);
+        renderMessages(tabName, containerId);
+        if (role === 'ai' && currentUser) {
+            const users = getUsers();
+            if (users[currentUser]) {
+                users[currentUser].requests = (users[currentUser].requests || 0) + 1;
+                saveUsers(users);
+                renderAuthBar();
             }
+        }
+    }
 
-            function getChatHistory(tabName) {
-                try { return JSON.parse(localStorage.getItem(getHistoryKey(tabName))) || []; } catch { return []; }
-            }
+    function resetChat(tabName) {
+        const history = getChatHistory(tabName);
+        if (history.length > 0) {
+            const archiveKey = `archive_${tabName}_${Date.now()}`;
+            localStorage.setItem(archiveKey, JSON.stringify(history));
+        }
+        saveChatHistory(tabName, []);
+        const containerId = tabName + '-messages';
+        const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
+        addMessage(tabName, containerId, 'ai', welcome);
+    }
 
-            function saveChatHistory(tabName, messages) {
-                localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
-            }
+    // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
+    function renderChatPanel(tabName) {
+        const panel = document.getElementById('chatPanel');
+        const config = chatConfig[tabName];
+        if (!config) return;
 
-            // ---------- НОВЫЕ НАЗВАНИЯ ----------
-            const chatConfig = {
-                analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
-                improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
-                teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
-                competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
-                replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
-                unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – я мгновенно рассчитаю прибыль и маржинальность.' },
-                marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
-                stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
-                naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
-                niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Напишите запрос для поиска ниши.' },
-                packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
-                suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
-            };
-
-            // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ----------
-            function renderMessages(tabName, containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                const history = getChatHistory(tabName);
-                container.innerHTML = '';
-                history.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = `chat-message ${msg.role}`;
-                    const bubble = document.createElement('div');
-                    bubble.className = 'bubble';
-                    if (msg.role === 'ai') {
-                        let content = formatAIResponse(msg.content);
-                        if (msg.source) {
-                            content += `<div class="source">📎 Источник: ${msg.source}</div>`;
-                        }
-                        bubble.innerHTML = content;
-                    } else {
-                        bubble.textContent = msg.content;
-                    }
-                    div.appendChild(bubble);
-                    container.appendChild(div);
-                });
-                container.scrollTop = container.scrollHeight;
-            }
-
-            function addMessage(tabName, containerId, role, content, source) {
-                const history = getChatHistory(tabName);
-                history.push({ role, content, source: source || null });
-                saveChatHistory(tabName, history);
-                renderMessages(tabName, containerId);
-                if (role === 'ai' && currentUser) {
-                    const users = getUsers();
-                    if (users[currentUser]) {
-                        users[currentUser].requests = (users[currentUser].requests || 0) + 1;
-                        saveUsers(users);
-                        renderAuthBar();
-                    }
-                }
-            }
-
-            function resetChat(tabName) {
-                const history = getChatHistory(tabName);
-                if (history.length > 0) {
-                    const archiveKey = `archive_${tabName}_${Date.now()}`;
-                    localStorage.setItem(archiveKey, JSON.stringify(history));
-                }
-                saveChatHistory(tabName, []);
-                const containerId = tabName + '-messages';
-                const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
-                addMessage(tabName, containerId, 'ai', welcome);
-            }
-
-            // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
-            function renderChatPanel(tabName) {
-                const panel = document.getElementById('chatPanel');
-                const config = chatConfig[tabName];
-                if (!config) return;
-
-                let html = `
+        let html = `
             <div class="chat-header">
                 <span class="title">${config.icon} ${config.name}</span>
                 <div class="btn-group">
@@ -705,196 +293,182 @@
                 </div>
             </div>
             <div class="chat-messages" id="${tabName}-messages"></div>
-            `;
+        `;
 
-                if (tabName === 'analytics') {
-                    html += `
+        if (tabName === 'analytics') {
+            html += `
                 <div class="file-upload-area">
                     <label class="label" for="analytics-file">📎 Загрузить PDF</label>
                     <input type="file" id="analytics-file" accept=".pdf">
                     <span class="file-name" id="analytics-file-name">файл не выбран</span>
                     <button class="btn" id="analytics-upload-btn" disabled>Анализировать PDF</button>
                 </div>
-                `;
-                }
+            `;
+        }
 
-                const examplesMap = {
-                    analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
-                    improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
-                    teach: ['Как поднять цену?', 'Что добавить для премиум-позиционирования?', 'Стратегия для дорогого товара'],
-                    competitors: ['157065568, 157065569', '61472739, 157065568'],
-                    replies: ['Товар не соответствует описанию, разочарован.', 'Долго ждал доставку.', 'Отличный товар, но дорого.'],
-                    unit: ['500, 200, 50, 30, 20', '1000, 400, 100, 50, 30'],
-                    marketing: ['Кокосовые сливки', 'Натуральный мёд', 'Органический кофе'],
-                    stock: ['61472739', '157065568'],
-                    naming: ['Кокосовые сливки натуральные, без сахара', 'Органический мёд, цветочный'],
-                    niche: ['Найди нишу до 1000 ₽ с маржой >30%', 'Проанализируй нишу "кокосовые сливки"', 'Какие ниши растут прямо сейчас?',
-                        'Что продавать новичку на WB?'
-                    ],
-                    packaging: ['Как упаковать хрупкий товар?', 'Требования WB к упаковке', 'Какие материалы выбрать?',
-                        'Ошибки в упаковке и штрафы'
-                    ],
-                    suppliers: ['Где закупать коробки для WB?', 'Как найти поставщика товара?', 'Чек-лист проверки поставщика',
-                        'Оптовые закупки в Китае'
-                    ]
-                };
-                const examples = examplesMap[tabName] || ['Напишите свой запрос...'];
-                html += `<div class="examples" id="${tabName}-examples">`;
-                examples.forEach(ex => {
-                    html += `<button class="chip" data-target="${tabName}-input">${ex}</button>`;
-                });
-                html += `</div>`;
+        const examplesMap = {
+            analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
+            improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
+            teach: ['Как поднять цену?', 'Что добавить для премиум-позиционирования?', 'Стратегия для дорогого товара'],
+            competitors: ['157065568, 157065569', '61472739, 157065568'],
+            replies: ['Товар не соответствует описанию, разочарован.', 'Долго ждал доставку.', 'Отличный товар, но дорого.'],
+            unit: ['500, 200, 50, 30, 20', '1000, 400, 100, 50, 30'],
+            marketing: ['Кокосовые сливки', 'Натуральный мёд', 'Органический кофе'],
+            stock: ['61472739', '157065568'],
+            naming: ['Кокосовые сливки натуральные, без сахара', 'Органический мёд, цветочный'],
+            niche: ['Найди нишу до 1000 ₽ с маржой >30%', 'Проанализируй нишу "кокосовые сливки"', 'Какие ниши растут прямо сейчас?', 'Что продавать новичку на WB?'],
+            packaging: ['Как упаковать хрупкий товар?', 'Требования WB к упаковке', 'Какие материалы выбрать?', 'Ошибки в упаковке и штрафы'],
+            suppliers: ['Где закупать коробки для WB?', 'Как найти поставщика товара?', 'Чек-лист проверки поставщика', 'Оптовые закупки в Китае']
+        };
+        const examples = examplesMap[tabName] || ['Напишите свой запрос...'];
+        html += `<div class="examples" id="${tabName}-examples">`;
+        examples.forEach(ex => {
+            html += `<button class="chip" data-target="${tabName}-input">${ex}</button>`;
+        });
+        html += `</div>`;
 
-                html += `
+        html += `
             <div class="chat-input-area">
                 <textarea id="${tabName}-input" rows="1" placeholder="Введите сообщение..."></textarea>
                 <button class="btn" id="${tabName}-send">Отправить</button>
             </div>
-            `;
+        `;
 
-                panel.innerHTML = html;
-                initChat(tabName);
+        panel.innerHTML = html;
+        initChat(tabName);
+    }
+
+    // ---------- ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА ----------
+    function initChat(tabName) {
+        const input = document.getElementById(`${tabName}-input`);
+        const sendBtn = document.getElementById(`${tabName}-send`);
+        const messagesId = `${tabName}-messages`;
+
+        const history = getChatHistory(tabName);
+        if (history.length === 0) {
+            const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
+            addMessage(tabName, messagesId, 'ai', welcome);
+        } else {
+            renderMessages(tabName, messagesId);
+        }
+
+        const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
+        examples.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const targetId = this.dataset.target;
+                const targetInput = document.getElementById(targetId);
+                if (targetInput) {
+                    targetInput.value = this.textContent.trim();
+                    targetInput.focus();
+                }
+            });
+        });
+
+        const newChatBtn = document.getElementById(`newchat-${tabName}`);
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', function() {
+                if (confirm('Начать новый чат? Текущая история сохранится в архиве.')) {
+                    resetChat(tabName);
+                }
+            });
+        }
+
+        const historyBtn = document.getElementById(`history-${tabName}`);
+        if (historyBtn) {
+            historyBtn.addEventListener('click', function() {
+                showHistoryModal(tabName);
+            });
+        }
+
+        sendBtn.addEventListener('click', function() {
+            sendChatMessage(tabName);
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage(tabName);
             }
+        });
 
-            // ---------- ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА ----------
-            function initChat(tabName) {
-                const input = document.getElementById(`${tabName}-input`);
-                const sendBtn = document.getElementById(`${tabName}-send`);
-                const messagesId = `${tabName}-messages`;
+        // Спец. обработка для аналитики (PDF)
+        if (tabName === 'analytics') {
+            const fileInput = document.getElementById('analytics-file');
+            const uploadBtn = document.getElementById('analytics-upload-btn');
+            const fileName = document.getElementById('analytics-file-name');
+            let currentFile = null;
 
-                const history = getChatHistory(tabName);
-                if (history.length === 0) {
-                    const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
-                    addMessage(tabName, messagesId, 'ai', welcome);
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    currentFile = this.files[0];
+                    fileName.textContent = currentFile.name;
+                    uploadBtn.disabled = false;
                 } else {
-                    renderMessages(tabName, messagesId);
+                    currentFile = null;
+                    fileName.textContent = 'файл не выбран';
+                    uploadBtn.disabled = true;
                 }
+            });
 
-                const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
-                examples.forEach(chip => {
-                    chip.addEventListener('click', function() {
-                        const targetId = this.dataset.target;
-                        const targetInput = document.getElementById(targetId);
-                        if (targetInput) {
-                            targetInput.value = this.textContent.trim();
-                            targetInput.focus();
-                        }
-                    });
-                });
-
-                const newChatBtn = document.getElementById(`newchat-${tabName}`);
-                if (newChatBtn) {
-                    newChatBtn.addEventListener('click', function() {
-                        if (confirm('Начать новый чат? Текущая история сохранится в архиве.')) {
-                            resetChat(tabName);
-                        }
-                    });
-                }
-
-                const historyBtn = document.getElementById(`history-${tabName}`);
-                if (historyBtn) {
-                    historyBtn.addEventListener('click', function() {
-                        showHistoryModal(tabName);
-                    });
-                }
-
-                sendBtn.addEventListener('click', function() {
-                    sendChatMessage(tabName);
-                });
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendChatMessage(tabName);
+            uploadBtn.addEventListener('click', async function() {
+                if (!currentFile) { alert('Выберите PDF.'); return; }
+                addMessage(tabName, messagesId, 'user', `📄 Загружен файл: ${currentFile.name}`);
+                const loadingMsg = '⏳ Анализирую PDF...';
+                addMessage(tabName, messagesId, 'ai', loadingMsg);
+                this.disabled = true;
+                try {
+                    const arrayBuffer = await currentFile.arrayBuffer();
+                    const pdfjsLib = window.pdfjsLib;
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdf = await loadingTask.promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(item => item.str).join(' ') + '\n';
                     }
-                });
-
-                // Спец. обработка для аналитики (PDF)
-                if (tabName === 'analytics') {
-                    const fileInput = document.getElementById('analytics-file');
-                    const uploadBtn = document.getElementById('analytics-upload-btn');
-                    const fileName = document.getElementById('analytics-file-name');
-                    let currentFile = null;
-
-                    fileInput.addEventListener('change', function() {
-                        if (this.files.length > 0) {
-                            currentFile = this.files[0];
-                            fileName.textContent = currentFile.name;
-                            uploadBtn.disabled = false;
-                        } else {
-                            currentFile = null;
-                            fileName.textContent = 'файл не выбран';
-                            uploadBtn.disabled = true;
-                        }
-                    });
-
-                    uploadBtn.addEventListener('click', async function() {
-                        if (!currentFile) { alert('Выберите PDF.'); return; }
-                        addMessage(tabName, messagesId, 'user', `📄 Загружен файл: ${currentFile.name}`);
-                        const loadingMsg = '⏳ Анализирую PDF...';
-                        addMessage(tabName, messagesId, 'ai', loadingMsg);
-                        this.disabled = true;
-                        try {
-                            const arrayBuffer = await currentFile.arrayBuffer();
-                            const pdfjsLib = window.pdfjsLib;
-                            pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-                            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                            const pdf = await loadingTask.promise;
-                            let fullText = '';
-                            for (let i = 1; i <= pdf.numPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const textContent = await page.getTextContent();
-                                fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-                            }
-                            if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
-                            const prompt =
-                                `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
-                            const analysis = await callDeepSeek(prompt,
-                                "Ты — аналитик данных. Отвечай на русском. Используй таблицы для частотности и процентов."
-                                );
-                            const history = getChatHistory(tabName);
-                            if (history.length > 0 && history[history.length - 1].role === 'ai' && history[history
-                                    .length - 1].content === loadingMsg) {
-                                history.pop();
-                                saveChatHistory(tabName, history);
-                            }
-                            addMessage(tabName, messagesId, 'ai', analysis, 'Анализ PDF-файла с отзывами');
-                        } catch (err) {
-                            const history = getChatHistory(tabName);
-                            if (history.length > 0 && history[history.length - 1].role === 'ai' && history[history
-                                    .length - 1].content === loadingMsg) {
-                                history.pop();
-                                saveChatHistory(tabName, history);
-                            }
-                            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                        } finally {
-                            this.disabled = false;
-                            currentFile = null;
-                            fileName.textContent = 'файл не выбран';
-                            fileInput.value = '';
-                        }
-                    });
+                    if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
+                    const prompt = `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
+                    const analysis = await callDeepSeek(prompt, "Ты — аналитик данных. Отвечай на русском. Используй таблицы для частотности и процентов.");
+                    const history = getChatHistory(tabName);
+                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
+                        history.pop();
+                        saveChatHistory(tabName, history);
+                    }
+                    addMessage(tabName, messagesId, 'ai', analysis, 'Анализ PDF-файла с отзывами');
+                } catch (err) {
+                    const history = getChatHistory(tabName);
+                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
+                        history.pop();
+                        saveChatHistory(tabName, history);
+                    }
+                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+                } finally {
+                    this.disabled = false;
+                    currentFile = null;
+                    fileName.textContent = 'файл не выбран';
+                    fileInput.value = '';
                 }
+            });
+        }
 
-                // Спец. обработка для юнит-экономики (без AI)
-                if (tabName === 'unit') {
-                    const unitInput = document.getElementById('unit-input');
-                    const unitSend = document.getElementById('unit-send');
-                    unitSend.addEventListener('click', function() {
-                        const text = unitInput.value.trim();
-                        if (!text) return;
-                        const parts = text.split(',').map(x => parseFloat(x.trim()));
-                        if (parts.length !== 5 || parts.some(isNaN)) {
-                            addMessage(tabName, messagesId, 'ai',
-                                '❌ Введите 5 чисел через запятую: цена, себестоимость, логистика, комиссия, реклама.'
-                                );
-                            return;
-                        }
-                        addMessage(tabName, messagesId, 'user', text);
-                        const [price, cost, logistics, commission, ad] = parts;
-                        const margin = price - cost - logistics - commission - ad;
-                        const marginPct = (margin / price) * 100;
-                        const table = `
+        // Спец. обработка для юнит-экономики (без AI)
+        if (tabName === 'unit') {
+            const unitInput = document.getElementById('unit-input');
+            const unitSend = document.getElementById('unit-send');
+            unitSend.addEventListener('click', function() {
+                const text = unitInput.value.trim();
+                if (!text) return;
+                const parts = text.split(',').map(x => parseFloat(x.trim()));
+                if (parts.length !== 5 || parts.some(isNaN)) {
+                    addMessage(tabName, messagesId, 'ai', '❌ Введите 5 чисел через запятую: цена, себестоимость, логистика, комиссия, реклама.');
+                    return;
+                }
+                addMessage(tabName, messagesId, 'user', text);
+                const [price, cost, logistics, commission, ad] = parts;
+                const margin = price - cost - logistics - commission - ad;
+                const marginPct = (margin / price) * 100;
+                const table = `
 | Показатель | Значение |
 |------------|----------|
 | Цена | ${price} ₽ |
@@ -905,88 +479,80 @@
 | **Прибыль** | **${margin.toFixed(2)} ₽** |
 | **Маржинальность** | **${marginPct.toFixed(1)}%** |
 `;
-                        addMessage(tabName, messagesId, 'ai', table, 'Расчёт на основе введённых данных');
-                        unitInput.value = '';
-                    });
-                    unitInput.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault();
-                            unitSend.click(); }
-                    });
+                addMessage(tabName, messagesId, 'ai', table, 'Расчёт на основе введённых данных');
+                unitInput.value = '';
+            });
+            unitInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); unitSend.click(); }
+            });
+        }
+
+        // Спец. обработка для поиска ниш (парсинг WB)
+        if (tabName === 'niche') {
+            const nicheInput = document.getElementById('niche-input');
+            const nicheSend = document.getElementById('niche-send');
+
+            async function fetchWildberriesData(query) {
+                try {
+                    const url = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error('Ошибка API Wildberries');
+                    const data = await resp.json();
+                    const products = data.data?.products || [];
+                    const results = products.slice(0, 20).map(p => ({
+                        name: p.name || '',
+                        price: p.sizes?.[0]?.price?.product / 100 || 0,
+                        rating: p.rating || 0,
+                        feedbacks: p.feedbacks || 0,
+                        brand: p.brand || '',
+                        seller: p.supplier || ''
+                    }));
+                    return results;
+                } catch (e) {
+                    console.error('Ошибка сбора данных WB:', e);
+                    return null;
                 }
+            }
 
-                // Спец. обработка для поиска ниш (парсинг WB)
-                if (tabName === 'niche') {
-                    const nicheInput = document.getElementById('niche-input');
-                    const nicheSend = document.getElementById('niche-send');
+            nicheSend.addEventListener('click', async function() {
+                const text = nicheInput.value.trim();
+                if (!text) return;
+                nicheSend.disabled = true;
+                nicheInput.disabled = true;
 
-                    async function fetchWildberriesData(query) {
-                        try {
-                            const url =
-                                `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
-                            const resp = await fetch(url);
-                            if (!resp.ok) throw new Error('Ошибка API Wildberries');
-                            const data = await resp.json();
-                            const products = data.data?.products || [];
-                            const results = products.slice(0, 20).map(p => ({
-                                name: p.name || '',
-                                price: p.sizes?.[0]?.price?.product / 100 || 0,
-                                rating: p.rating || 0,
-                                feedbacks: p.feedbacks || 0,
-                                brand: p.brand || '',
-                                seller: p.supplier || ''
-                            }));
-                            return results;
-                        } catch (e) {
-                            console.error('Ошибка сбора данных WB:', e);
-                            return null;
-                        }
+                addMessage(tabName, messagesId, 'user', text);
+                nicheInput.value = '';
+
+                const typingId = 'typing_' + Date.now();
+                const history = getChatHistory(tabName);
+                history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
+                saveChatHistory(tabName, history);
+                renderMessages(tabName, messagesId);
+
+                try {
+                    let searchQuery = text;
+                    const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
+                    let words = text.split(/\s+/);
+                    let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
+                    if (filtered.length > 0) {
+                        searchQuery = filtered.join(' ');
                     }
 
-                    nicheSend.addEventListener('click', async function() {
-                        const text = nicheInput.value.trim();
-                        if (!text) return;
-                        nicheSend.disabled = true;
-                        nicheInput.disabled = true;
-
-                        addMessage(tabName, messagesId, 'user', text);
-                        nicheInput.value = '';
-
-                        const typingId = 'typing_' + Date.now();
-                        const history = getChatHistory(tabName);
-                        history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>',
-                            isTyping: true, id: typingId });
-                        saveChatHistory(tabName, history);
+                    const rawData = await fetchWildberriesData(searchQuery);
+                    if (!rawData || rawData.length === 0) {
+                        const newHistory = getChatHistory(tabName);
+                        const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                        saveChatHistory(tabName, filtered2);
                         renderMessages(tabName, messagesId);
+                        addMessage(tabName, messagesId, 'ai',
+                            `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"\n\nПосле этого я проанализирую данные и дам рекомендации по нише.`,
+                            'Данные с Wildberries'
+                        );
+                        return;
+                    }
 
-                        try {
-                            let searchQuery = text;
-                            const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие',
-                                'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой',
-                                'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку',
-                                'продавать', 'вход'
-                            ];
-                            let words = text.split(/\s+/);
-                            let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length >
-                            2);
-                            if (filtered.length > 0) {
-                                searchQuery = filtered.join(' ');
-                            }
-
-                            const rawData = await fetchWildberriesData(searchQuery);
-                            if (!rawData || rawData.length === 0) {
-                                const newHistory = getChatHistory(tabName);
-                                const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                                saveChatHistory(tabName, filtered2);
-                                renderMessages(tabName, messagesId);
-                                addMessage(tabName, messagesId, 'ai',
-                                    `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"\n\nПосле этого я проанализирую данные и дам рекомендации по нише.`,
-                                    'Данные с Wildberries'
-                                );
-                                return;
-                            }
-
-                            const dataStr = JSON.stringify(rawData.slice(0, 15), null, 2);
-                            const prompt = `Пользователь ищет нишу: "${text}".
+                    const dataStr = JSON.stringify(rawData.slice(0, 15), null, 2);
+                    const prompt = `Пользователь ищет нишу: "${text}".
                     Вот данные с Wildberries по запросу (первые 15 товаров):
                     ${dataStr}
 
@@ -998,462 +564,436 @@
 
                     Ответ структурируй: заголовки ###, списки, таблицы.`;
 
-                            const aiResponse = await callDeepSeek(prompt,
-                                "Ты — эксперт по маркетплейсам и поиску ниш.");
-                            const newHistory = getChatHistory(tabName);
-                            const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                            saveChatHistory(tabName, filtered2);
-                            renderMessages(tabName, messagesId);
-                            addMessage(tabName, messagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
-                        } catch (err) {
-                            const newHistory = getChatHistory(tabName);
-                            const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                            saveChatHistory(tabName, filtered2);
-                            renderMessages(tabName, messagesId);
-                            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                        } finally {
-                            nicheSend.disabled = false;
-                            nicheInput.disabled = false;
-                            nicheInput.focus();
-                        }
-                    });
-
-                    nicheInput.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            nicheSend.click();
-                        }
-                    });
+                    const aiResponse = await callDeepSeek(prompt, "Ты — эксперт по маркетплейсам и поиску ниш.");
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
+                } catch (err) {
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+                } finally {
+                    nicheSend.disabled = false;
+                    nicheInput.disabled = false;
+                    nicheInput.focus();
                 }
-            }
+            });
 
-            // ---------- МОДАЛЬНОЕ ОКНО ИСТОРИИ ----------
-            function showHistoryModal(tabName) {
-                const modal = document.getElementById('historyModal');
-                const listContainer = document.getElementById('historyList');
-                const searchInput = document.getElementById('historySearch');
-                const closeBtn = document.getElementById('historyCloseBtn');
+            nicheInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    nicheSend.click();
+                }
+            });
+        }
+    }
 
-                const archives = [];
-                for (let key in localStorage) {
-                    if (key.startsWith(`archive_${tabName}_`)) {
-                        const timestamp = key.split('_')[2];
-                        const date = new Date(parseInt(timestamp));
-                        const history = JSON.parse(localStorage.getItem(key));
-                        let title = 'Диалог';
-                        for (let msg of history) {
-                            if (msg.role === 'user' || msg.role === 'ai') {
-                                const text = msg.content.replace(/\n/g, ' ').trim();
-                                if (text.length > 10) {
-                                    title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
-                                    break;
-                                }
-                            }
+    // ---------- МОДАЛЬНОЕ ОКНО ИСТОРИИ ----------
+    function showHistoryModal(tabName) {
+        const modal = document.getElementById('historyModal');
+        const listContainer = document.getElementById('historyList');
+        const searchInput = document.getElementById('historySearch');
+        const closeBtn = document.getElementById('historyCloseBtn');
+
+        const archives = [];
+        for (let key in localStorage) {
+            if (key.startsWith(`archive_${tabName}_`)) {
+                const timestamp = key.split('_')[2];
+                const date = new Date(parseInt(timestamp));
+                const history = JSON.parse(localStorage.getItem(key));
+                let title = 'Диалог';
+                for (let msg of history) {
+                    if (msg.role === 'user' || msg.role === 'ai') {
+                        const text = msg.content.replace(/\n/g, ' ').trim();
+                        if (text.length > 10) {
+                            title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+                            break;
                         }
-                        archives.push({
-                            key: key,
-                            date: date,
-                            title: title,
-                            history: history,
-                            timestamp: parseInt(timestamp)
-                        });
                     }
                 }
-
-                if (archives.length === 0) {
-                    listContainer.innerHTML = '<p style="color:#64748b;">📭 Нет сохранённых архивов для этого чата.</p>';
-                    modal.classList.add('active');
-                    searchInput.value = '';
-                    return;
-                }
-
-                archives.sort((a, b) => b.timestamp - a.timestamp);
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const weekStart = new Date(today);
-                weekStart.setDate(weekStart.getDate() - 7);
-
-                const groups = {
-                    'Сегодня': [],
-                    'Вчера': [],
-                    'На этой неделе': [],
-                    'Ранее': []
-                };
-
-                archives.forEach(arch => {
-                    const d = arch.date;
-                    const dateOnly = new Date(d);
-                    dateOnly.setHours(0, 0, 0, 0);
-                    if (dateOnly.getTime() === today.getTime()) {
-                        groups['Сегодня'].push(arch);
-                    } else if (dateOnly.getTime() === yesterday.getTime()) {
-                        groups['Вчера'].push(arch);
-                    } else if (dateOnly.getTime() >= weekStart.getTime()) {
-                        groups['На этой неделе'].push(arch);
-                    } else {
-                        groups['Ранее'].push(arch);
-                    }
+                archives.push({
+                    key: key,
+                    date: date,
+                    title: title,
+                    history: history,
+                    timestamp: parseInt(timestamp)
                 });
+            }
+        }
 
-                function renderList(filterText = '') {
-                    const filter = filterText.toLowerCase().trim();
-                    let html = '';
-                    for (let group in groups) {
-                        const items = groups[group].filter(arch => {
-                            if (!filter) return true;
-                            return arch.title.toLowerCase().includes(filter) ||
-                                arch.history.some(msg => msg.content.toLowerCase().includes(filter));
-                        });
-                        if (items.length === 0) continue;
-                        html += `<div class="group-header">${group}</div>`;
-                        items.forEach(arch => {
-                            const dateStr = arch.date.toLocaleString('ru-RU', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
-                            html += `
+        if (archives.length === 0) {
+            listContainer.innerHTML = '<p style="color:#64748b;">📭 Нет сохранённых архивов для этого чата.</p>';
+            modal.classList.add('active');
+            searchInput.value = '';
+            return;
+        }
+
+        archives.sort((a, b) => b.timestamp - a.timestamp);
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - 7);
+
+        const groups = {
+            'Сегодня': [],
+            'Вчера': [],
+            'На этой неделе': [],
+            'Ранее': []
+        };
+
+        archives.forEach(arch => {
+            const d = arch.date;
+            const dateOnly = new Date(d);
+            dateOnly.setHours(0,0,0,0);
+            if (dateOnly.getTime() === today.getTime()) {
+                groups['Сегодня'].push(arch);
+            } else if (dateOnly.getTime() === yesterday.getTime()) {
+                groups['Вчера'].push(arch);
+            } else if (dateOnly.getTime() >= weekStart.getTime()) {
+                groups['На этой неделе'].push(arch);
+            } else {
+                groups['Ранее'].push(arch);
+            }
+        });
+
+        function renderList(filterText = '') {
+            const filter = filterText.toLowerCase().trim();
+            let html = '';
+            for (let group in groups) {
+                const items = groups[group].filter(arch => {
+                    if (!filter) return true;
+                    return arch.title.toLowerCase().includes(filter) ||
+                           arch.history.some(msg => msg.content.toLowerCase().includes(filter));
+                });
+                if (items.length === 0) continue;
+                html += `<div class="group-header">${group}</div>`;
+                items.forEach(arch => {
+                    const dateStr = arch.date.toLocaleString('ru-RU', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    html += `
                         <div class="history-item" data-key="${arch.key}">
                             <span class="title">${arch.title}</span>
                             <span class="date">${dateStr}</span>
                         </div>
                     `;
-                        });
-                    }
-                    if (!html) {
-                        html = '<p style="color:#64748b;">🔍 Ничего не найдено.</p>';
-                    }
-                    listContainer.innerHTML = html;
-
-                    document.querySelectorAll('.history-item').forEach(item => {
-                        item.addEventListener('click', function() {
-                            const key = this.dataset.key;
-                            const archivedHistory = JSON.parse(localStorage.getItem(key));
-                            saveChatHistory(tabName, archivedHistory);
-                            const messagesId = tabName + '-messages';
-                            renderMessages(tabName, messagesId);
-                            modal.classList.remove('active');
-                        });
-                    });
-                }
-
-                renderList('');
-                searchInput.addEventListener('input', function() {
-                    renderList(this.value);
                 });
-                closeBtn.addEventListener('click', function() {
-                    modal.classList.remove('active');
-                    searchInput.value = '';
-                });
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.classList.remove('active');
-                        searchInput.value = '';
-                    }
-                });
-
-                modal.classList.add('active');
-                searchInput.focus();
             }
+            if (!html) {
+                html = '<p style="color:#64748b;">🔍 Ничего не найдено.</p>';
+            }
+            listContainer.innerHTML = html;
 
-            // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ ----------
-            async function sendChatMessage(tabName) {
-                const input = document.getElementById(`${tabName}-input`);
-                const sendBtn = document.getElementById(`${tabName}-send`);
-                const messagesId = `${tabName}-messages`;
-                const text = input.value.trim();
-                if (!text) return;
-
-                sendBtn.disabled = true;
-                input.disabled = true;
-
-                addMessage(tabName, messagesId, 'user', text);
-                input.value = '';
-
-                const typingId = 'typing_' + Date.now();
-                const history = getChatHistory(tabName);
-                history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true,
-                    id: typingId });
-                saveChatHistory(tabName, history);
-                renderMessages(tabName, messagesId);
-
-                try {
-                    let systemPrompt =
-                        "Ты — эксперт по маркетплейсам. Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
-                    let source = 'AI-анализ на основе данных Wildberries';
-                    let prompt = text;
-
-                    const prompts = {
-                        improve: (t) =>
-                            `Составь чек-лист из 5 рекомендаций по улучшению карточки на основе: ${t}. Используй таблицы для сравнения.`,
-                        teach: (t) =>
-                            `Ответь на вопрос или дай стратегии продажи дороже для: ${t}. Используй таблицы для сравнения стратегий.`,
-                        competitors: (t) =>
-                            `Проанализируй конкурентов по артикулам: ${t}. Сравни цены, рейтинги, отзывы. Используй таблицу.`,
-                        replies: (t) =>
-                            `Напиши 3 варианта ответа на отзыв: ${t}. Представь в виде таблицы: стиль, текст.`,
-                        marketing: (t) =>
-                            `Для товара "${t}" предложи 5 идей продвижения. Используй таблицу: идея, описание, бюджет.`,
-                        stock: (t) =>
-                            `Спрогнозируй спрос на товар ${t}. Дай рекомендации по закупкам в виде таблицы: месяц, прогноз, рекомендация.`,
-                        naming: (t) =>
-                            `Для товара "${t}" предложи 10 названий, 5 слоганов и 3 УТП. Используй таблицы для группировки.`,
-                        packaging: (t) =>
-                            `Ответь на вопрос об упаковке товара для Wildberries: ${t}. Дай рекомендации по материалам, требованиям площадки, типичным ошибкам. Если есть конкретный товар, учти его хрупкость и габариты.`,
-                        suppliers: (t) =>
-                            `Ответь на вопрос о поиске поставщиков для Wildberries: ${t}. Подскажи, где искать (каналы, платформы), дай чек-лист проверки надёжности, расскажи про нюансы импорта и оптовых закупок.`
-                    };
-
-                    if (prompts[tabName]) {
-                        prompt = prompts[tabName](text);
-                    }
-
-                    const systemPrompts = {
-                        analytics: "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.",
-                        competitors: "Ты — аналитик данных.",
-                        replies: "Ты — специалист по работе с клиентами.",
-                        marketing: "Ты — маркетолог.",
-                        stock: "Ты — логист.",
-                        naming: "Ты — копирайтер.",
-                        packaging: "Ты — эксперт по упаковке для маркетплейсов. Знаешь требования Wildberries к упаковке (габариты, вес, маркировка, амортизация). Даёшь практические советы.",
-                        suppliers: "Ты — эксперт по закупкам для маркетплейсов. Знаешь каналы поиска поставщиков (B2B-каталоги, Wildberries для бизнеса, выставки, Китай). Советуешь как минимизировать риски."
-                    };
-                    if (systemPrompts[tabName]) {
-                        systemPrompt = systemPrompts[tabName] +
-                            " Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
-                    }
-
-                    const result = await callDeepSeek(prompt, systemPrompt);
-                    const newHistory = getChatHistory(tabName);
-                    const filtered = newHistory.filter(msg => msg.id !== typingId);
-                    saveChatHistory(tabName, filtered);
-                    addMessage(tabName, messagesId, 'ai', result, source);
-                } catch (err) {
-                    const newHistory = getChatHistory(tabName);
-                    const filtered = newHistory.filter(msg => msg.id !== typingId);
-                    saveChatHistory(tabName, filtered);
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const key = this.dataset.key;
+                    const archivedHistory = JSON.parse(localStorage.getItem(key));
+                    saveChatHistory(tabName, archivedHistory);
+                    const messagesId = tabName + '-messages';
                     renderMessages(tabName, messagesId);
-                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                } finally {
-                    sendBtn.disabled = false;
-                    input.disabled = false;
-                    input.focus();
-                }
+                    modal.classList.remove('active');
+                });
+            });
+        }
+
+        renderList('');
+        searchInput.addEventListener('input', function() {
+            renderList(this.value);
+        });
+        closeBtn.addEventListener('click', function() {
+            modal.classList.remove('active');
+            searchInput.value = '';
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                searchInput.value = '';
+            }
+        });
+
+        modal.classList.add('active');
+        searchInput.focus();
+    }
+
+    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ ----------
+    async function sendChatMessage(tabName) {
+        const input = document.getElementById(`${tabName}-input`);
+        const sendBtn = document.getElementById(`${tabName}-send`);
+        const messagesId = `${tabName}-messages`;
+        const text = input.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        input.disabled = true;
+
+        addMessage(tabName, messagesId, 'user', text);
+        input.value = '';
+
+        const typingId = 'typing_' + Date.now();
+        const history = getChatHistory(tabName);
+        history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
+        saveChatHistory(tabName, history);
+        renderMessages(tabName, messagesId);
+
+        try {
+            let systemPrompt = "Ты — эксперт по маркетплейсам. Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
+            let source = 'AI-анализ на основе данных Wildberries';
+            let prompt = text;
+
+            const prompts = {
+                improve: (t) => `Составь чек-лист из 5 рекомендаций по улучшению карточки на основе: ${t}. Используй таблицы для сравнения.`,
+                teach: (t) => `Ответь на вопрос или дай стратегии продажи дороже для: ${t}. Используй таблицы для сравнения стратегий.`,
+                competitors: (t) => `Проанализируй конкурентов по артикулам: ${t}. Сравни цены, рейтинги, отзывы. Используй таблицу.`,
+                replies: (t) => `Напиши 3 варианта ответа на отзыв: ${t}. Представь в виде таблицы: стиль, текст.`,
+                marketing: (t) => `Для товара "${t}" предложи 5 идей продвижения. Используй таблицу: идея, описание, бюджет.`,
+                stock: (t) => `Спрогнозируй спрос на товар ${t}. Дай рекомендации по закупкам в виде таблицы: месяц, прогноз, рекомендация.`,
+                naming: (t) => `Для товара "${t}" предложи 10 названий, 5 слоганов и 3 УТП. Используй таблицы для группировки.`,
+                packaging: (t) => `Ответь на вопрос об упаковке товара для Wildberries: ${t}. Дай рекомендации по материалам, требованиям площадки, типичным ошибкам. Если есть конкретный товар, учти его хрупкость и габариты.`,
+                suppliers: (t) => `Ответь на вопрос о поиске поставщиков для Wildberries: ${t}. Подскажи, где искать (каналы, платформы), дай чек-лист проверки надёжности, расскажи про нюансы импорта и оптовых закупок.`
+            };
+
+            if (prompts[tabName]) {
+                prompt = prompts[tabName](text);
             }
 
-            // ---------- AI ВЫЗОВ ----------
-            async function callDeepSeek(prompt, systemPrompt) {
-                const url = "https://api.aitunnel.ru/v1/chat/completions";
-                const headers = { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" };
-                const payload = {
-                    "model": "deepseek/deepseek-chat",
-                    "messages": [
-                        { "role": "system", "content": systemPrompt },
-                        { "role": "user", "content": prompt }
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 2500
-                };
-                const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
-                if (!resp.ok) { const err = await resp.text(); throw new Error(`Ошибка API (${resp.status}): ${err}`); }
-                const data = await resp.json();
-                return data.choices[0].message.content;
+            const systemPrompts = {
+                analytics: "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.",
+                competitors: "Ты — аналитик данных.",
+                replies: "Ты — специалист по работе с клиентами.",
+                marketing: "Ты — маркетолог.",
+                stock: "Ты — логист.",
+                naming: "Ты — копирайтер.",
+                packaging: "Ты — эксперт по упаковке для маркетплейсов. Знаешь требования Wildberries к упаковке (габариты, вес, маркировка, амортизация). Даёшь практические советы.",
+                suppliers: "Ты — эксперт по закупкам для маркетплейсов. Знаешь каналы поиска поставщиков (B2B-каталоги, Wildberries для бизнеса, выставки, Китай). Советуешь как минимизировать риски."
+            };
+            if (systemPrompts[tabName]) {
+                systemPrompt = systemPrompts[tabName] + " Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
             }
 
-            // ---------- ФОРМАТИРОВАНИЕ ОТВЕТА ----------
-            function convertMarkdownTables(text) {
-                const lines = text.split('\n');
-                let result = [],
-                    i = 0;
-                while (i < lines.length) {
-                    const line = lines[i];
-                    if (line.includes('|') && !line.trim().startsWith('<!--')) {
-                        let tableLines = [],
-                            j = i;
-                        while (j < lines.length && lines[j].includes('|')) { tableLines.push(lines[j]);
-                            j++; }
-                        if (tableLines.length >= 2 && tableLines[1].includes('---')) {
-                            let html = '<table>';
-                            const headers = tableLines[0].split('|').map(s => s.trim()).filter(s => s !== '');
-                            if (headers.length > 0) {
-                                html += '<thead><tr>';
-                                headers.forEach(h => html += `<th>${h}</th>`);
-                                html += '</tr></thead>';
-                            }
-                            html += '<tbody>';
-                            for (let k = 2; k < tableLines.length; k++) {
-                                const cells = tableLines[k].split('|').map(s => s.trim()).filter(s => s !== '');
-                                if (cells.length === headers.length) {
-                                    html += '<tr>';
-                                    cells.forEach(c => html += `<td>${c}</td>`);
-                                    html += '</tr>';
-                                }
-                            }
-                            html += '</tbody></table>';
-                            result.push(html);
-                            i = j;
-                            continue;
+            const result = await callDeepSeek(prompt, systemPrompt);
+            const newHistory = getChatHistory(tabName);
+            const filtered = newHistory.filter(msg => msg.id !== typingId);
+            saveChatHistory(tabName, filtered);
+            addMessage(tabName, messagesId, 'ai', result, source);
+        } catch (err) {
+            const newHistory = getChatHistory(tabName);
+            const filtered = newHistory.filter(msg => msg.id !== typingId);
+            saveChatHistory(tabName, filtered);
+            renderMessages(tabName, messagesId);
+            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+        } finally {
+            sendBtn.disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    // ---------- AI ВЫЗОВ ----------
+    async function callDeepSeek(prompt, systemPrompt) {
+        const url = "https://api.aitunnel.ru/v1/chat/completions";
+        const headers = { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" };
+        const payload = {
+            "model": "deepseek/deepseek-chat",
+            "messages": [
+                { "role": "system", "content": systemPrompt },
+                { "role": "user", "content": prompt }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 2500
+        };
+        const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
+        if (!resp.ok) { const err = await resp.text(); throw new Error(`Ошибка API (${resp.status}): ${err}`); }
+        const data = await resp.json();
+        return data.choices[0].message.content;
+    }
+
+    // ---------- ФОРМАТИРОВАНИЕ ОТВЕТА ----------
+    function convertMarkdownTables(text) {
+        const lines = text.split('\n');
+        let result = [], i = 0;
+        while (i < lines.length) {
+            const line = lines[i];
+            if (line.includes('|') && !line.trim().startsWith('<!--')) {
+                let tableLines = [], j = i;
+                while (j < lines.length && lines[j].includes('|')) { tableLines.push(lines[j]); j++; }
+                if (tableLines.length >= 2 && tableLines[1].includes('---')) {
+                    let html = '<table>';
+                    const headers = tableLines[0].split('|').map(s => s.trim()).filter(s => s !== '');
+                    if (headers.length > 0) {
+                        html += '<thead><tr>';
+                        headers.forEach(h => html += `<th>${h}</th>`);
+                        html += '</tr></thead>';
+                    }
+                    html += '<tbody>';
+                    for (let k = 2; k < tableLines.length; k++) {
+                        const cells = tableLines[k].split('|').map(s => s.trim()).filter(s => s !== '');
+                        if (cells.length === headers.length) {
+                            html += '<tr>';
+                            cells.forEach(c => html += `<td>${c}</td>`);
+                            html += '</tr>';
                         }
                     }
-                    result.push(line);
-                    i++;
+                    html += '</tbody></table>';
+                    result.push(html);
+                    i = j;
+                    continue;
                 }
-                return result.join('\n');
             }
+            result.push(line);
+            i++;
+        }
+        return result.join('\n');
+    }
 
-            function formatAIResponse(text) {
-                let formatted = convertMarkdownTables(text);
-                let lines = formatted.split('\n').filter(line => line.trim() !== '');
-                let html = '',
-                    inList = false;
-                for (let line of lines) {
-                    const trimmed = line.trim();
-                    if (trimmed.startsWith('<table')) {
-                        if (inList) { html += '</ul>';
-                            inList = false; }
-                        html += trimmed;
-                        continue;
-                    }
-                    if (trimmed.startsWith('### ')) {
-                        if (inList) { html += '</ul>';
-                            inList = false; }
-                        html += `<h3>${trimmed.substring(4)}</h3>`;
-                    } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-                        if (inList) { html += '</ul>';
-                            inList = false; }
-                        html += `<p><strong>${trimmed.slice(2, -2)}</strong></p>`;
-                    } else if (trimmed.match(/^[-•]\s/)) {
-                        if (!inList) { html += '<ul>';
-                            inList = true; }
-                        html += `<li>${trimmed.substring(2)}</li>`;
-                    } else if (trimmed.match(/^\d+\.\s/)) {
-                        if (!inList) { html += '<ul>';
-                            inList = true; }
-                        html += `<li>${trimmed}</li>`;
-                    } else {
-                        if (inList) { html += '</ul>';
-                            inList = false; }
-                        html += `<p>${trimmed}</p>`;
-                    }
-                }
-                if (inList) html += '</ul>';
-                return html;
+    function formatAIResponse(text) {
+        let formatted = convertMarkdownTables(text);
+        let lines = formatted.split('\n').filter(line => line.trim() !== '');
+        let html = '', inList = false;
+        for (let line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('<table')) {
+                if (inList) { html += '</ul>'; inList = false; }
+                html += trimmed;
+                continue;
             }
-
-            // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
-            function switchChat(tabName) {
-                document.querySelectorAll('.sidebar-item').forEach(el => {
-                    el.classList.toggle('active', el.dataset.tab === tabName);
-                });
-                renderChatPanel(tabName);
+            if (trimmed.startsWith('### ')) {
+                if (inList) { html += '</ul>'; inList = false; }
+                html += `<h3>${trimmed.substring(4)}</h3>`;
+            } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+                if (inList) { html += '</ul>'; inList = false; }
+                html += `<p><strong>${trimmed.slice(2, -2)}</strong></p>`;
+            } else if (trimmed.match(/^[-•]\s/)) {
+                if (!inList) { html += '<ul>'; inList = true; }
+                html += `<li>${trimmed.substring(2)}</li>`;
+            } else if (trimmed.match(/^\d+\.\s/)) {
+                if (!inList) { html += '<ul>'; inList = true; }
+                html += `<li>${trimmed}</li>`;
+            } else {
+                if (inList) { html += '</ul>'; inList = false; }
+                html += `<p>${trimmed}</p>`;
             }
+        }
+        if (inList) html += '</ul>';
+        return html;
+    }
 
-            // ---------- ПРОФИЛЬ ----------
-            function renderAuthBar() {
-                const bar = document.getElementById('authBar');
-                if (currentUser) {
-                    const users = getUsers();
-                    const data = users[currentUser] || {};
-                    bar.innerHTML = `
+    // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
+    function switchChat(tabName) {
+        document.querySelectorAll('.sidebar-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.tab === tabName);
+        });
+        renderChatPanel(tabName);
+    }
+
+    // ---------- ПРОФИЛЬ ----------
+    function renderAuthBar() {
+        const bar = document.getElementById('authBar');
+        if (currentUser) {
+            const users = getUsers();
+            const data = users[currentUser] || {};
+            bar.innerHTML = `
                 <span class="user-name">👤 ${currentUser}</span>
                 <span style="font-size:13px; color:#64748b;">${data.requests || 0} запросов</span>
                 <button class="btn-outline" id="logoutBtn">Выйти</button>
             `;
-                    document.getElementById('logoutBtn').addEventListener('click', function() {
-                        clearSession();
-                        currentUser = null;
-                        renderAuthBar();
-                        const active = document.querySelector('.sidebar-item.active');
-                        if (active) switchChat(active.dataset.tab);
-                    });
-                } else {
-                    bar.innerHTML = `
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                clearSession();
+                currentUser = null;
+                renderAuthBar();
+                const active = document.querySelector('.sidebar-item.active');
+                if (active) switchChat(active.dataset.tab);
+            });
+        } else {
+            bar.innerHTML = `
                 <button class="btn-outline" id="loginBtn">Войти</button>
                 <button class="btn-outline" id="registerBtn">Регистрация</button>
             `;
-                    document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
-                    document.getElementById('registerBtn').addEventListener('click', () => openAuthModal('register'));
-                }
+            document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
+            document.getElementById('registerBtn').addEventListener('click', () => openAuthModal('register'));
+        }
+    }
+
+    // ---------- МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ----------
+    const modal = document.getElementById('authModal');
+    const modalTitle = document.getElementById('authModalTitle');
+    const authForm = document.getElementById('authForm');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authSwitchText = document.getElementById('authSwitchText');
+    const authSwitchLink = document.getElementById('authSwitchLink');
+    const authCloseBtn = document.getElementById('authCloseBtn');
+
+    let authMode = 'login';
+
+    function openAuthModal(mode) {
+        authMode = mode;
+        if (mode === 'login') {
+            modalTitle.textContent = 'Вход';
+            authSubmitBtn.textContent = 'Войти';
+            authSwitchText.innerHTML = 'Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a>';
+        } else {
+            modalTitle.textContent = 'Регистрация';
+            authSubmitBtn.textContent = 'Зарегистрироваться';
+            authSwitchText.innerHTML = 'Уже есть аккаунт? <a id="authSwitchLink">Войти</a>';
+        }
+        document.getElementById('authLogin').value = '';
+        document.getElementById('authPassword').value = '';
+        modal.classList.add('active');
+        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            openAuthModal(authMode === 'login' ? 'register' : 'login');
+        });
+    }
+
+    authCloseBtn.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+
+    authForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const login = document.getElementById('authLogin').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        if (!login || !password) { alert('Заполните все поля.'); return; }
+        const users = getUsers();
+        if (authMode === 'register') {
+            if (users[login]) { alert('Пользователь с таким логином уже существует.'); return; }
+            users[login] = { password, registered: Date.now(), requests: 0 };
+            saveUsers(users);
+            alert('Регистрация успешна! Теперь войдите.');
+            openAuthModal('login');
+            return;
+        } else {
+            if (!users[login] || users[login].password !== password) {
+                alert('Неверный логин или пароль.');
+                return;
             }
-
-            // ---------- МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ----------
-            const modal = document.getElementById('authModal');
-            const modalTitle = document.getElementById('authModalTitle');
-            const authForm = document.getElementById('authForm');
-            const authSubmitBtn = document.getElementById('authSubmitBtn');
-            const authSwitchText = document.getElementById('authSwitchText');
-            const authSwitchLink = document.getElementById('authSwitchLink');
-            const authCloseBtn = document.getElementById('authCloseBtn');
-
-            let authMode = 'login';
-
-            function openAuthModal(mode) {
-                authMode = mode;
-                if (mode === 'login') {
-                    modalTitle.textContent = 'Вход';
-                    authSubmitBtn.textContent = 'Войти';
-                    authSwitchText.innerHTML = 'Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a>';
-                } else {
-                    modalTitle.textContent = 'Регистрация';
-                    authSubmitBtn.textContent = 'Зарегистрироваться';
-                    authSwitchText.innerHTML = 'Уже есть аккаунт? <a id="authSwitchLink">Войти</a>';
-                }
-                document.getElementById('authLogin').value = '';
-                document.getElementById('authPassword').value = '';
-                modal.classList.add('active');
-                document.getElementById('authSwitchLink').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    openAuthModal(authMode === 'login' ? 'register' : 'login');
-                });
-            }
-
-            authCloseBtn.addEventListener('click', () => modal.classList.remove('active'));
-            modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
-
-            authForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const login = document.getElementById('authLogin').value.trim();
-                const password = document.getElementById('authPassword').value.trim();
-                if (!login || !password) { alert('Заполните все поля.'); return; }
-                const users = getUsers();
-                if (authMode === 'register') {
-                    if (users[login]) { alert('Пользователь с таким логином уже существует.'); return; }
-                    users[login] = { password, registered: Date.now(), requests: 0 };
-                    saveUsers(users);
-                    alert('Регистрация успешна! Теперь войдите.');
-                    openAuthModal('login');
-                    return;
-                } else {
-                    if (!users[login] || users[login].password !== password) {
-                        alert('Неверный логин или пароль.');
-                        return;
-                    }
-                    currentUser = login;
-                    setSession(login);
-                    modal.classList.remove('active');
-                    renderAuthBar();
-                    const active = document.querySelector('.sidebar-item.active');
-                    if (active) switchChat(active.dataset.tab);
-                }
-            });
-
-            // ---------- ЗАПУСК ----------
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const tab = this.dataset.tab;
-                    if (tab) switchChat(tab);
-                });
-            });
-
+            currentUser = login;
+            setSession(login);
+            modal.classList.remove('active');
             renderAuthBar();
-            switchChat('analytics');
+            const active = document.querySelector('.sidebar-item.active');
+            if (active) switchChat(active.dataset.tab);
+        }
+    });
 
-        })();
-    </script>
+    // ---------- ЗАПУСК ----------
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            if (tab) switchChat(tab);
+        });
+    });
+
+    renderAuthBar();
+    switchChat('analytics');
+
+})();
+</script>
 </body>
 </html>
