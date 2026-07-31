@@ -103,6 +103,27 @@
 
         .promo-status { margin-top: 10px; font-size: 14px; }
 
+        /* Профиль */
+        .profile-form { max-width: 400px; }
+        .profile-form .field { margin-bottom: 16px; }
+        .profile-form .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+        .profile-form .field input { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+        .profile-form .field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+        .profile-form .btn { margin-top: 4px; }
+        .profile-form .status { margin-top: 10px; font-size: 14px; }
+        .profile-form .status.success { color: #16a34a; }
+        .profile-form .status.error { color: #dc2626; }
+
+        /* Тарифы */
+        .tariffs-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        .tariffs-table th { background: #2563eb; color: white; padding: 10px 12px; text-align: left; }
+        .tariffs-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+        .tariffs-table tr:nth-child(even) { background: #f8fafc; }
+        .tariffs-table .highlight { background: #dbeafe; font-weight: 600; }
+        .payment-info { background: #f1f5f9; padding: 16px 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #2563eb; }
+        .payment-info p { margin: 6px 0; }
+        .payment-info .label { font-weight: 600; color: #1e293b; }
+
         @media (max-width: 700px) {
             .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
             .main-layout { flex-direction: column; }
@@ -138,6 +159,8 @@
             <div class="sidebar-item" data-tab="niche"><span class="icon">🔍</span> Поиск ниш</div>
             <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка товара</div>
             <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поиск поставщиков</div>
+            <div class="sidebar-item" data-tab="tariffs"><span class="icon">💳</span> Тарифы</div>
+            <div class="sidebar-item" data-tab="profile"><span class="icon">👤</span> Профиль</div>
         </div>
 
         <div class="chat-panel" id="chatPanel">
@@ -145,7 +168,7 @@
         </div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.6</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.9</div>
 </div>
 
 <!-- Модальные окна -->
@@ -217,7 +240,6 @@
     }
     function savePromoCodes(codes) { localStorage.setItem('promoCodes', JSON.stringify(codes)); }
 
-    // По умолчанию добавляем STRENGTHINPEOPLE, если список пуст
     if (getPromoCodes().length === 0) {
         savePromoCodes(['STRENGTHINPEOPLE']);
     }
@@ -241,6 +263,31 @@
             active: isPromoActive(),
             code: localStorage.getItem('promo_code') || ''
         };
+    }
+
+    // ---------- СЧЁТЧИК ЗАПРОСОВ (5 в месяц) ----------
+    function getMonthlyRequestsKey() {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        return `requests_${year}_${month}`;
+    }
+
+    function getMonthlyRequests() {
+        const key = getMonthlyRequestsKey();
+        return parseInt(localStorage.getItem(key) || '0');
+    }
+
+    function incrementMonthlyRequests() {
+        const key = getMonthlyRequestsKey();
+        const current = getMonthlyRequests();
+        localStorage.setItem(key, current + 1);
+    }
+
+    function canMakeRequest() {
+        if (isPromoActive()) return true;
+        const count = getMonthlyRequests();
+        return count < 5;
     }
 
     // ---------- АДМИН-ПАНЕЛЬ ----------
@@ -284,7 +331,7 @@
         suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
     };
 
-    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ----------
+    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ ----------
     function renderMessages(tabName, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -339,6 +386,15 @@
 
     // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
     function renderChatPanel(tabName) {
+        if (tabName === 'profile') {
+            renderProfile();
+            return;
+        }
+        if (tabName === 'tariffs') {
+            renderTariffs();
+            return;
+        }
+
         const panel = document.getElementById('chatPanel');
         const config = chatConfig[tabName];
         if (!config) return;
@@ -403,7 +459,6 @@
         const sendBtn = document.getElementById(`${tabName}-send`);
         const messagesId = `${tabName}-messages`;
 
-        // Проверяем, есть ли история
         const history = getChatHistory(tabName);
         if (history.length === 0) {
             const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
@@ -412,7 +467,6 @@
             renderMessages(tabName, messagesId);
         }
 
-        // Примеры запросов
         const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
         examples.forEach(chip => {
             chip.addEventListener('click', function() {
@@ -425,7 +479,6 @@
             });
         });
 
-        // Новый чат
         const newChatBtn = document.getElementById(`newchat-${tabName}`);
         if (newChatBtn) {
             newChatBtn.addEventListener('click', function() {
@@ -435,7 +488,6 @@
             });
         }
 
-        // История
         const historyBtn = document.getElementById(`history-${tabName}`);
         if (historyBtn) {
             historyBtn.addEventListener('click', function() {
@@ -443,7 +495,6 @@
             });
         }
 
-        // Отправка
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -777,17 +828,12 @@
         const text = input.value.trim();
         if (!text) return;
 
-        // Проверка доступа (промокод или лимит)
-        if (!isPromoActive()) {
-            const today = new Date().toDateString();
-            const key = `requests_${today}`;
-            let count = parseInt(localStorage.getItem(key) || '0');
-            if (count >= 5) {
-                alert('🔒 Достигнут лимит бесплатных запросов (5 в день). Введите промокод для снятия ограничений.');
-                return;
-            }
-            localStorage.setItem(key, count + 1);
+        // Проверка доступа (промокод или лимит 5 запросов в месяц)
+        if (!canMakeRequest()) {
+            alert('🔒 Достигнут лимит бесплатных запросов (5 в месяц). Введите промокод для снятия ограничений или приобретите тариф.');
+            return;
         }
+        incrementMonthlyRequests();
 
         sendBtn.disabled = true;
         input.disabled = true;
@@ -950,6 +996,219 @@
     }
 
     // ---------- ПРОФИЛЬ ----------
+    function renderProfile() {
+        const panel = document.getElementById('chatPanel');
+        if (!currentUser) {
+            panel.innerHTML = `<div style="padding:20px; text-align:center;"><p>Войдите в систему, чтобы редактировать профиль.</p></div>`;
+            return;
+        }
+        const users = getUsers();
+        const userData = users[currentUser] || {};
+        const promoStatus = getPromoStatus();
+
+        let html = `
+            <div class="chat-header">
+                <span class="title">👤 Профиль</span>
+                <div></div>
+            </div>
+            <div style="flex:1; overflow-y:auto; padding-right:8px;">
+                <div class="profile-form" style="max-width:500px; margin: 20px 0;">
+                    <div class="field">
+                        <label>Логин</label>
+                        <input type="text" value="${currentUser}" disabled style="background:#f1f5f9;">
+                    </div>
+                    <div class="field">
+                        <label>Новое имя (логин)</label>
+                        <input type="text" id="profileNewName" placeholder="Введите новое имя" value="${currentUser}">
+                    </div>
+                    <div class="field">
+                        <label>Старый пароль</label>
+                        <input type="password" id="profileOldPass" placeholder="Старый пароль">
+                    </div>
+                    <div class="field">
+                        <label>Новый пароль</label>
+                        <input type="password" id="profileNewPass" placeholder="Новый пароль">
+                    </div>
+                    <div class="field">
+                        <label>Подтверждение пароля</label>
+                        <input type="password" id="profileConfirmPass" placeholder="Подтвердите новый пароль">
+                    </div>
+                    <button class="btn" id="profileSaveBtn">Сохранить изменения</button>
+                    <div id="profileStatus" class="status"></div>
+                </div>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+                <div style="max-width:500px;">
+                    <h3 style="margin-bottom: 10px;">🎁 Промокод</h3>
+                    <p style="font-size:14px; color:#64748b; margin-bottom: 8px;">
+                        ${promoStatus.active ? `✅ Промокод <strong>${promoStatus.code}</strong> активирован. У вас бесплатный доступ!` : '❌ Промокод не активирован.'}
+                    </p>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <input type="text" id="profilePromoInput" placeholder="Введите промокод" style="flex:1; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+                        <button class="btn" id="profilePromoBtn">Активировать</button>
+                    </div>
+                    <div id="profilePromoStatus" class="status"></div>
+                </div>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+                <div style="max-width:500px;">
+                    <h3 style="margin-bottom: 10px;">📊 Статистика</h3>
+                    <p style="font-size:14px; color:#64748b;">Использовано запросов в этом месяце: <strong>${getMonthlyRequests()}</strong> из 5.</p>
+                </div>
+            </div>
+        `;
+
+        panel.innerHTML = html;
+
+        document.getElementById('profileSaveBtn').addEventListener('click', function() {
+            const newName = document.getElementById('profileNewName').value.trim();
+            const oldPass = document.getElementById('profileOldPass').value.trim();
+            const newPass = document.getElementById('profileNewPass').value.trim();
+            const confirmPass = document.getElementById('profileConfirmPass').value.trim();
+            const status = document.getElementById('profileStatus');
+
+            status.className = 'status';
+            status.textContent = '';
+
+            if (oldPass && userData.password !== oldPass) {
+                status.textContent = '❌ Неверный старый пароль.';
+                status.className = 'status error';
+                return;
+            }
+
+            if (newPass && newPass !== confirmPass) {
+                status.textContent = '❌ Пароли не совпадают.';
+                status.className = 'status error';
+                return;
+            }
+
+            if (newName && newName !== currentUser) {
+                const users = getUsers();
+                if (users[newName]) {
+                    status.textContent = '❌ Логин уже занят.';
+                    status.className = 'status error';
+                    return;
+                }
+                const userDataCopy = users[currentUser];
+                delete users[currentUser];
+                users[newName] = userDataCopy;
+                if (newPass) users[newName].password = newPass;
+                saveUsers(users);
+                setSession(newName);
+                currentUser = newName;
+                renderAuthBar();
+                status.textContent = '✅ Имя обновлено!';
+                status.className = 'status success';
+                setTimeout(() => renderProfile(), 500);
+            } else if (newPass) {
+                const users = getUsers();
+                users[currentUser].password = newPass;
+                saveUsers(users);
+                status.textContent = '✅ Пароль изменён!';
+                status.className = 'status success';
+                setTimeout(() => renderProfile(), 500);
+            } else {
+                status.textContent = 'ℹ️ Ничего не изменено.';
+                status.className = 'status';
+            }
+        });
+
+        document.getElementById('profilePromoBtn').addEventListener('click', function() {
+            const input = document.getElementById('profilePromoInput');
+            const code = input.value.trim().toUpperCase();
+            const status = document.getElementById('profilePromoStatus');
+            if (!code) {
+                status.textContent = '❌ Введите промокод.';
+                status.className = 'status error';
+                return;
+            }
+            if (activatePromo(code)) {
+                status.textContent = `✅ Промокод ${code} активирован!`;
+                status.className = 'status success';
+                input.value = '';
+                renderAuthBar();
+                setTimeout(() => renderProfile(), 500);
+            } else {
+                status.textContent = '❌ Неверный промокод.';
+                status.className = 'status error';
+            }
+        });
+    }
+
+    // ---------- ТАРИФЫ (с реальными реквизитами) ----------
+    function renderTariffs() {
+        const panel = document.getElementById('chatPanel');
+        let html = `
+            <div class="chat-header">
+                <span class="title">💳 Тарифы и оплата</span>
+                <div></div>
+            </div>
+            <div style="flex:1; overflow-y:auto; padding-right:8px;">
+                <h3 style="margin: 16px 0 8px;">Выберите тариф</h3>
+                <table class="tariffs-table">
+                    <thead>
+                        <tr>
+                            <th>Тариф</th>
+                            <th>Лимит запросов</th>
+                            <th>Цена</th>
+                            <th>Доступные функции</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Бесплатный</strong></td>
+                            <td>5 запросов в месяц</td>
+                            <td>0 ₽</td>
+                            <td>✅ Базовый анализ отзывов<br>✅ Рекомендации</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Старт</strong></td>
+                            <td>50 запросов в месяц</td>
+                            <td>490 ₽/мес</td>
+                            <td>✅ Всё из бесплатного<br>✅ Расширенный отчёт<br>✅ Таблицы и графики</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Про</strong></td>
+                            <td>200 запросов в месяц</td>
+                            <td>990 ₽/мес</td>
+                            <td>✅ Всё из «Старт»<br>✅ Экспорт в PDF<br>✅ Приоритетная поддержка</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td><strong>Бизнес</strong></td>
+                            <td>Безлимит</td>
+                            <td>2 490 ₽/мес</td>
+                            <td>✅ Всё из «Про»<br>✅ White-label (брендирование)<br>✅ Индивидуальные настройки</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="payment-info">
+                    <h4 style="margin-bottom: 8px;">💳 Как оплатить</h4>
+                    <p><span class="label">СБП (Система быстрых платежей):</span> перевод на номер телефона <strong>+7 902 881 99 31</strong> (получатель: Соловьев Георгий Сергеевич).</p>
+                    <p><span class="label">Банковская карта:</span> <strong>2202 2092 3186 1286</strong> (Сбербанк).</p>
+                    <p><span class="label">Комментарий к переводу:</span> укажите ваш <strong>логин</strong> (его можно увидеть в профиле) и желаемый тариф (Старт, Про или Бизнес).</p>
+                    <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите нам в поддержку ВК с подтверждением перевода, и мы активируем тариф в течение 24 часов.</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <button class="btn" id="tariffPayBtn" style="width: auto;">💰 Оплатить сейчас</button>
+                    <span id="tariffPayStatus" style="margin-left: 16px; font-size: 14px; color: #64748b;"></span>
+                </div>
+            </div>
+        `;
+
+        panel.innerHTML = html;
+
+        document.getElementById('tariffPayBtn').addEventListener('click', function() {
+            const status = document.getElementById('tariffPayStatus');
+            status.textContent = '💳 Для оплаты переведите деньги по указанным реквизитам. После перевода напишите нам в ВК с подтверждением.';
+            status.style.color = '#2563eb';
+        });
+    }
+
+    // ---------- ПРОФИЛЬ (отображение в шапке) ----------
     function renderAuthBar() {
         const bar = document.getElementById('authBar');
         if (currentUser) {
@@ -1041,7 +1300,7 @@
         }
     });
 
-    // ---------- АДМИН-ПАНЕЛЬ (если включена) ----------
+    // ---------- АДМИН-ПАНЕЛЬ ----------
     if (adminMode) {
         const panel = document.createElement('div');
         panel.className = 'admin-panel';
@@ -1055,11 +1314,9 @@
             <div class="promo-list" id="promoList"></div>
             <p style="font-size:12px; color:#64748b; margin-top:10px;">Промокоды хранятся в localStorage. Для постоянного хранения нужна база данных.</p>
         `;
-        // Вставляем панель в начало чат-панели (после сайдбара)
         const chatPanel = document.getElementById('chatPanel');
         chatPanel.parentNode.insertBefore(panel, chatPanel);
 
-        // Загружаем список промокодов
         function renderPromoList() {
             const codes = getPromoCodes();
             const container = document.getElementById('promoList');
