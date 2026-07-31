@@ -92,6 +92,17 @@
         .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-outline:hover { background: #e2e8f0; }
 
+        /* Админ-панель */
+        .admin-panel { display: none; margin: 20px 0; padding: 20px; background: #f1f5f9; border-radius: 12px; border: 1px solid #cbd5e1; }
+        .admin-panel h3 { margin-bottom: 12px; }
+        .admin-panel .promo-input-group { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+        .admin-panel .promo-input-group input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 150px; }
+        .admin-panel .promo-list { margin-top: 10px; }
+        .admin-panel .promo-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
+        .admin-panel .promo-item .del-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 18px; }
+
+        .promo-status { margin-top: 10px; font-size: 14px; }
+
         @media (max-width: 700px) {
             .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
             .main-layout { flex-direction: column; }
@@ -103,15 +114,17 @@
 <body>
 <div class="container">
     <header>
-        <div>
-            <h1>WB.<span>Analytics</span></h1>
-            <div class="subtitle">12 умных помощников</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="logo.svg" alt="WB.Analytics" width="180" height="45" style="height: 45px; width: auto;" onerror="this.style.display='none'">
+            <div>
+                <div style="font-size: 22px; font-weight: 700; color: #0f172a;">WB.<span style="color: #2563eb;">Analytics</span></div>
+                <div style="font-size: 12px; color: #64748b;">умный помощник селлера</div>
+            </div>
         </div>
         <div class="auth-bar" id="authBar"></div>
     </header>
 
     <div class="main-layout">
-        <!-- Левая панель: новые названия -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика товара</div>
             <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшить карточку</div>
@@ -127,11 +140,12 @@
             <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поиск поставщиков</div>
         </div>
 
-        <!-- Правая панель -->
-        <div class="chat-panel" id="chatPanel"></div>
+        <div class="chat-panel" id="chatPanel">
+            <!-- динамическая загрузка -->
+        </div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.5</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.6</div>
 </div>
 
 <!-- Модальные окна -->
@@ -197,7 +211,52 @@
         }
     }
 
-    // ---------- ХРАНЕНИЕ ИСТОРИИ ----------
+    // ---------- ПРОМОКОДЫ ----------
+    function getPromoCodes() {
+        try { return JSON.parse(localStorage.getItem('promoCodes')) || []; } catch { return []; }
+    }
+    function savePromoCodes(codes) { localStorage.setItem('promoCodes', JSON.stringify(codes)); }
+
+    // По умолчанию добавляем STRENGTHINPEOPLE, если список пуст
+    if (getPromoCodes().length === 0) {
+        savePromoCodes(['STRENGTHINPEOPLE']);
+    }
+
+    function isPromoActive() {
+        return localStorage.getItem('promo_active') === 'true';
+    }
+
+    function activatePromo(code) {
+        const codes = getPromoCodes();
+        if (codes.includes(code)) {
+            localStorage.setItem('promo_active', 'true');
+            localStorage.setItem('promo_code', code);
+            return true;
+        }
+        return false;
+    }
+
+    function getPromoStatus() {
+        return {
+            active: isPromoActive(),
+            code: localStorage.getItem('promo_code') || ''
+        };
+    }
+
+    // ---------- АДМИН-ПАНЕЛЬ ----------
+    const ADMIN_PASSWORD = 'wbadmin2025';
+    const urlParams = new URLSearchParams(window.location.search);
+    let adminMode = false;
+    if (urlParams.get('admin') === '1') {
+        const pwd = prompt('Введите пароль администратора:');
+        if (pwd === ADMIN_PASSWORD) {
+            adminMode = true;
+        } else if (pwd !== null) {
+            alert('Неверный пароль.');
+        }
+    }
+
+    // ---------- ХРАНЕНИЕ ИСТОРИИ ЧАТОВ ----------
     function getHistoryKey(tabName) {
         return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
     }
@@ -209,14 +268,14 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    // ---------- НОВЫЕ НАЗВАНИЯ ----------
+    // ---------- КОНФИГ ЧАТОВ ----------
     const chatConfig = {
         analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
         improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
         teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
         competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
         replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
-        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – я мгновенно рассчитаю прибыль и маржинальность.' },
+        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – мгновенный расчёт прибыли.' },
         marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
         stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
         naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
@@ -344,6 +403,7 @@
         const sendBtn = document.getElementById(`${tabName}-send`);
         const messagesId = `${tabName}-messages`;
 
+        // Проверяем, есть ли история
         const history = getChatHistory(tabName);
         if (history.length === 0) {
             const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
@@ -352,6 +412,7 @@
             renderMessages(tabName, messagesId);
         }
 
+        // Примеры запросов
         const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
         examples.forEach(chip => {
             chip.addEventListener('click', function() {
@@ -364,6 +425,7 @@
             });
         });
 
+        // Новый чат
         const newChatBtn = document.getElementById(`newchat-${tabName}`);
         if (newChatBtn) {
             newChatBtn.addEventListener('click', function() {
@@ -373,6 +435,7 @@
             });
         }
 
+        // История
         const historyBtn = document.getElementById(`history-${tabName}`);
         if (historyBtn) {
             historyBtn.addEventListener('click', function() {
@@ -380,6 +443,7 @@
             });
         }
 
+        // Отправка
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -390,7 +454,7 @@
             }
         });
 
-        // Спец. обработка для аналитики (PDF)
+        // Спец. обработка аналитики (PDF)
         if (tabName === 'analytics') {
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
@@ -452,7 +516,7 @@
             });
         }
 
-        // Спец. обработка для юнит-экономики (без AI)
+        // Спец. обработка юнит-экономики (без AI)
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -487,7 +551,7 @@
             });
         }
 
-        // Спец. обработка для поиска ниш (парсинг WB)
+        // Спец. обработка поиска ниш (парсинг WB)
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
@@ -499,7 +563,7 @@
                     if (!resp.ok) throw new Error('Ошибка API Wildberries');
                     const data = await resp.json();
                     const products = data.data?.products || [];
-                    const results = products.slice(0, 20).map(p => ({
+                    return products.slice(0, 20).map(p => ({
                         name: p.name || '',
                         price: p.sizes?.[0]?.price?.product / 100 || 0,
                         rating: p.rating || 0,
@@ -507,7 +571,6 @@
                         brand: p.brand || '',
                         seller: p.supplier || ''
                     }));
-                    return results;
                 } catch (e) {
                     console.error('Ошибка сбора данных WB:', e);
                     return null;
@@ -534,9 +597,7 @@
                     const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
                     let words = text.split(/\s+/);
                     let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
-                    if (filtered.length > 0) {
-                        searchQuery = filtered.join(' ');
-                    }
+                    if (filtered.length > 0) searchQuery = filtered.join(' ');
 
                     const rawData = await fetchWildberriesData(searchQuery);
                     if (!rawData || rawData.length === 0) {
@@ -641,26 +702,16 @@
         const weekStart = new Date(today);
         weekStart.setDate(weekStart.getDate() - 7);
 
-        const groups = {
-            'Сегодня': [],
-            'Вчера': [],
-            'На этой неделе': [],
-            'Ранее': []
-        };
+        const groups = { 'Сегодня': [], 'Вчера': [], 'На этой неделе': [], 'Ранее': [] };
 
         archives.forEach(arch => {
             const d = arch.date;
             const dateOnly = new Date(d);
             dateOnly.setHours(0,0,0,0);
-            if (dateOnly.getTime() === today.getTime()) {
-                groups['Сегодня'].push(arch);
-            } else if (dateOnly.getTime() === yesterday.getTime()) {
-                groups['Вчера'].push(arch);
-            } else if (dateOnly.getTime() >= weekStart.getTime()) {
-                groups['На этой неделе'].push(arch);
-            } else {
-                groups['Ранее'].push(arch);
-            }
+            if (dateOnly.getTime() === today.getTime()) groups['Сегодня'].push(arch);
+            else if (dateOnly.getTime() === yesterday.getTime()) groups['Вчера'].push(arch);
+            else if (dateOnly.getTime() >= weekStart.getTime()) groups['На этой неделе'].push(arch);
+            else groups['Ранее'].push(arch);
         });
 
         function renderList(filterText = '') {
@@ -687,9 +738,7 @@
                     `;
                 });
             }
-            if (!html) {
-                html = '<p style="color:#64748b;">🔍 Ничего не найдено.</p>';
-            }
+            if (!html) html = '<p style="color:#64748b;">🔍 Ничего не найдено.</p>';
             listContainer.innerHTML = html;
 
             document.querySelectorAll('.history-item').forEach(item => {
@@ -697,17 +746,14 @@
                     const key = this.dataset.key;
                     const archivedHistory = JSON.parse(localStorage.getItem(key));
                     saveChatHistory(tabName, archivedHistory);
-                    const messagesId = tabName + '-messages';
-                    renderMessages(tabName, messagesId);
+                    renderMessages(tabName, tabName + '-messages');
                     modal.classList.remove('active');
                 });
             });
         }
 
         renderList('');
-        searchInput.addEventListener('input', function() {
-            renderList(this.value);
-        });
+        searchInput.addEventListener('input', function() { renderList(this.value); });
         closeBtn.addEventListener('click', function() {
             modal.classList.remove('active');
             searchInput.value = '';
@@ -730,6 +776,18 @@
         const messagesId = `${tabName}-messages`;
         const text = input.value.trim();
         if (!text) return;
+
+        // Проверка доступа (промокод или лимит)
+        if (!isPromoActive()) {
+            const today = new Date().toDateString();
+            const key = `requests_${today}`;
+            let count = parseInt(localStorage.getItem(key) || '0');
+            if (count >= 5) {
+                alert('🔒 Достигнут лимит бесплатных запросов (5 в день). Введите промокод для снятия ограничений.');
+                return;
+            }
+            localStorage.setItem(key, count + 1);
+        }
 
         sendBtn.disabled = true;
         input.disabled = true;
@@ -760,9 +818,7 @@
                 suppliers: (t) => `Ответь на вопрос о поиске поставщиков для Wildberries: ${t}. Подскажи, где искать (каналы, платформы), дай чек-лист проверки надёжности, расскажи про нюансы импорта и оптовых закупок.`
             };
 
-            if (prompts[tabName]) {
-                prompt = prompts[tabName](text);
-            }
+            if (prompts[tabName]) prompt = prompts[tabName](text);
 
             const systemPrompts = {
                 analytics: "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.",
@@ -899,9 +955,12 @@
         if (currentUser) {
             const users = getUsers();
             const data = users[currentUser] || {};
+            const promoStatus = getPromoStatus();
+            const promoLabel = promoStatus.active ? `🎁 ${promoStatus.code}` : '';
             bar.innerHTML = `
                 <span class="user-name">👤 ${currentUser}</span>
                 <span style="font-size:13px; color:#64748b;">${data.requests || 0} запросов</span>
+                ${promoLabel ? `<span style="font-size:12px; background:#dbeafe; padding:2px 10px; border-radius:20px; color:#2563eb;">${promoLabel}</span>` : ''}
                 <button class="btn-outline" id="logoutBtn">Выйти</button>
             `;
             document.getElementById('logoutBtn').addEventListener('click', function() {
@@ -981,6 +1040,67 @@
             if (active) switchChat(active.dataset.tab);
         }
     });
+
+    // ---------- АДМИН-ПАНЕЛЬ (если включена) ----------
+    if (adminMode) {
+        const panel = document.createElement('div');
+        panel.className = 'admin-panel';
+        panel.id = 'adminPanel';
+        panel.innerHTML = `
+            <h3>🔐 Управление промокодами</h3>
+            <div class="promo-input-group">
+                <input type="text" id="newPromoInput" placeholder="Введите новый промокод">
+                <button class="btn" id="addPromoBtn">➕ Добавить</button>
+            </div>
+            <div class="promo-list" id="promoList"></div>
+            <p style="font-size:12px; color:#64748b; margin-top:10px;">Промокоды хранятся в localStorage. Для постоянного хранения нужна база данных.</p>
+        `;
+        // Вставляем панель в начало чат-панели (после сайдбара)
+        const chatPanel = document.getElementById('chatPanel');
+        chatPanel.parentNode.insertBefore(panel, chatPanel);
+
+        // Загружаем список промокодов
+        function renderPromoList() {
+            const codes = getPromoCodes();
+            const container = document.getElementById('promoList');
+            if (!container) return;
+            if (codes.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;">Список промокодов пуст.</p>';
+                return;
+            }
+            let html = '';
+            codes.forEach(code => {
+                html += `<div class="promo-item">
+                            <span><strong>${code}</strong></span>
+                            <button class="del-btn" data-code="${code}">✕</button>
+                        </div>`;
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.del-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.dataset.code;
+                    if (!confirm(`Удалить промокод "${code}"?`)) return;
+                    const newCodes = getPromoCodes().filter(c => c !== code);
+                    savePromoCodes(newCodes);
+                    renderPromoList();
+                });
+            });
+        }
+
+        document.getElementById('addPromoBtn').addEventListener('click', function() {
+            const input = document.getElementById('newPromoInput');
+            const code = input.value.trim().toUpperCase();
+            if (!code) { alert('Введите промокод.'); return; }
+            const codes = getPromoCodes();
+            if (codes.includes(code)) { alert('Такой промокод уже существует.'); return; }
+            codes.push(code);
+            savePromoCodes(codes);
+            input.value = '';
+            renderPromoList();
+        });
+
+        renderPromoList();
+    }
 
     // ---------- ЗАПУСК ----------
     document.querySelectorAll('.sidebar-item').forEach(item => {
