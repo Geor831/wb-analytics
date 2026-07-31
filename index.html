@@ -105,38 +105,36 @@
     <header>
         <div>
             <h1>WB.<span>Analytics</span></h1>
-            <div class="subtitle">12 AI-чатов</div>
+            <div class="subtitle">12 умных помощников</div>
         </div>
         <div class="auth-bar" id="authBar"></div>
     </header>
 
     <div class="main-layout">
-        <!-- Левая панель: список чатов -->
+        <!-- Левая панель: новые названия -->
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика</div>
-            <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшение</div>
-            <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Обучение</div>
+            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Разбор отзывов</div>
+            <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшить карточку</div>
+            <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Продавать дороже</div>
             <div class="sidebar-item" data-tab="competitors"><span class="icon">🏆</span> Конкуренты</div>
-            <div class="sidebar-item" data-tab="replies"><span class="icon">✍️</span> Ответы</div>
-            <div class="sidebar-item" data-tab="unit"><span class="icon">📈</span> Юнит</div>
-            <div class="sidebar-item" data-tab="marketing"><span class="icon">💡</span> Маркетинг</div>
-            <div class="sidebar-item" data-tab="stock"><span class="icon">📦</span> Запасы</div>
-            <div class="sidebar-item" data-tab="naming"><span class="icon">🎯</span> Нейминг</div>
+            <div class="sidebar-item" data-tab="replies"><span class="icon">✍️</span> Ответы на отзывы</div>
+            <div class="sidebar-item" data-tab="unit"><span class="icon">📈</span> Экономика товара</div>
+            <div class="sidebar-item" data-tab="marketing"><span class="icon">💡</span> Идеи продвижения</div>
+            <div class="sidebar-item" data-tab="stock"><span class="icon">📦</span> Прогноз запасов</div>
+            <div class="sidebar-item" data-tab="naming"><span class="icon">🎯</span> Названия и слоганы</div>
             <div class="sidebar-item" data-tab="niche"><span class="icon">🔍</span> Поиск ниш</div>
-            <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка</div>
-            <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поставщики</div>
+            <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка товара</div>
+            <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поиск поставщиков</div>
         </div>
 
-        <!-- Правая панель: активный чат -->
-        <div class="chat-panel" id="chatPanel">
-            <!-- Содержимое будет динамически загружаться через JavaScript -->
-        </div>
+        <!-- Правая панель -->
+        <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.2</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.4</div>
 </div>
 
-<!-- Модальное окно для регистрации -->
+<!-- Модальные окна (регистрация, история) -->
 <div class="modal" id="authModal">
     <div class="modal-content">
         <h2 id="authModalTitle">Вход</h2>
@@ -156,7 +154,6 @@
     </div>
 </div>
 
-<!-- Модальное окно для истории (динамическое) -->
 <div class="modal" id="historyModal">
     <div class="modal-content">
         <h2>📂 История чата</h2>
@@ -212,20 +209,20 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    // ---------- СПИСОК ЧАТОВ ----------
+    // ---------- НОВЫЕ НАЗВАНИЯ И ПРИВЕТСТВИЯ ----------
     const chatConfig = {
-        analytics: { name: 'Аналитика', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
-        improve: { name: 'Улучшение', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
-        teach: { name: 'Обучение', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
+        analytics: { name: 'Разбор отзывов', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
+        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
+        teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
         competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
-        replies: { name: 'Ответы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
-        unit: { name: 'Юнит', icon: '📈', welcome: '👋 Введите 5 чисел для расчёта юнит-экономики.' },
-        marketing: { name: 'Маркетинг', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
-        stock: { name: 'Запасы', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
-        naming: { name: 'Нейминг', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
+        replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
+        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – я мгновенно рассчитаю прибыль и маржинальность.' },
+        marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
+        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
+        naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
         niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Напишите запрос для поиска ниши.' },
-        packaging: { name: 'Упаковка', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
-        suppliers: { name: 'Поставщики', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
+        packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
+        suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
     };
 
     // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ----------
@@ -347,7 +344,6 @@
         const sendBtn = document.getElementById(`${tabName}-send`);
         const messagesId = `${tabName}-messages`;
 
-        // Проверяем историю, если пусто — добавляем приветствие
         const history = getChatHistory(tabName);
         if (history.length === 0) {
             const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
@@ -356,7 +352,6 @@
             renderMessages(tabName, messagesId);
         }
 
-        // Обработка примеров
         const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
         examples.forEach(chip => {
             chip.addEventListener('click', function() {
@@ -369,7 +364,6 @@
             });
         });
 
-        // Кнопка "Новый чат"
         const newChatBtn = document.getElementById(`newchat-${tabName}`);
         if (newChatBtn) {
             newChatBtn.addEventListener('click', function() {
@@ -379,7 +373,6 @@
             });
         }
 
-        // Кнопка "История"
         const historyBtn = document.getElementById(`history-${tabName}`);
         if (historyBtn) {
             historyBtn.addEventListener('click', function() {
@@ -387,7 +380,6 @@
             });
         }
 
-        // Отправка
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -398,7 +390,7 @@
             }
         });
 
-        // Специальная обработка для аналитики (PDF)
+        // Спец. обработка для аналитики (PDF)
         if (tabName === 'analytics') {
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
@@ -460,7 +452,7 @@
             });
         }
 
-        // Специальная обработка для юнита (без AI)
+        // Спец. обработка для юнит-экономики (без AI)
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -495,7 +487,7 @@
             });
         }
 
-        // Специальная обработка для поиска ниш (парсинг WB)
+        // Спец. обработка для поиска ниш (парсинг WB)
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
@@ -531,7 +523,6 @@
                 addMessage(tabName, messagesId, 'user', text);
                 nicheInput.value = '';
 
-                // Индикатор
                 const typingId = 'typing_' + Date.now();
                 const history = getChatHistory(tabName);
                 history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
@@ -608,14 +599,12 @@
         const searchInput = document.getElementById('historySearch');
         const closeBtn = document.getElementById('historyCloseBtn');
 
-        // Собираем архивы для этого чата
         const archives = [];
         for (let key in localStorage) {
             if (key.startsWith(`archive_${tabName}_`)) {
                 const timestamp = key.split('_')[2];
                 const date = new Date(parseInt(timestamp));
                 const history = JSON.parse(localStorage.getItem(key));
-                // Извлекаем название диалога: первое сообщение пользователя или AI
                 let title = 'Диалог';
                 for (let msg of history) {
                     if (msg.role === 'user' || msg.role === 'ai') {
@@ -643,10 +632,8 @@
             return;
         }
 
-        // Сортируем по дате (сначала новые)
         archives.sort((a, b) => b.timestamp - a.timestamp);
 
-        // Группировка по дням
         const today = new Date();
         today.setHours(0,0,0,0);
         const yesterday = new Date(today);
@@ -676,7 +663,6 @@
             }
         });
 
-        // Функция рендеринга списка с учётом поиска
         function renderList(filterText = '') {
             const filter = filterText.toLowerCase().trim();
             let html = '';
@@ -706,12 +692,10 @@
             }
             listContainer.innerHTML = html;
 
-            // Обработчики кликов
             document.querySelectorAll('.history-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const key = this.dataset.key;
                     const archivedHistory = JSON.parse(localStorage.getItem(key));
-                    // Заменяем текущую историю на архивную
                     saveChatHistory(tabName, archivedHistory);
                     const messagesId = tabName + '-messages';
                     renderMessages(tabName, messagesId);
@@ -720,21 +704,14 @@
             });
         }
 
-        // Первый рендеринг
         renderList('');
-
-        // Поиск
         searchInput.addEventListener('input', function() {
             renderList(this.value);
         });
-
-        // Закрытие
         closeBtn.addEventListener('click', function() {
             modal.classList.remove('active');
             searchInput.value = '';
         });
-
-        // Закрытие по клику вне окна
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
                 modal.classList.remove('active');
@@ -746,7 +723,7 @@
         searchInput.focus();
     }
 
-    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ (с индикатором) ----------
+    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ ----------
     async function sendChatMessage(tabName) {
         const input = document.getElementById(`${tabName}-input`);
         const sendBtn = document.getElementById(`${tabName}-send`);
@@ -760,7 +737,6 @@
         addMessage(tabName, messagesId, 'user', text);
         input.value = '';
 
-        // Индикатор
         const typingId = 'typing_' + Date.now();
         const history = getChatHistory(tabName);
         history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
