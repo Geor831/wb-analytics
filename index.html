@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        /* ===== Стили (без изменений) ===== */
+        /* === Стили (без изменений) === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -169,7 +169,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.1</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.2</div>
 </div>
 
 <!-- Модальные окна -->
@@ -605,10 +605,8 @@
                 articleStatus.style.color = '#2563eb';
                 try {
                     // Прокси для обхода CORS
-                    const proxy = 'https://cors-anywhere.herokuapp.com/';
-
-                    // 1. Данные товара
-                    const detailUrl = proxy + `https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`;
+                    const proxy = 'https://api.allorigins.win/raw?url=';
+                    const detailUrl = proxy + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
                     const detailResp = await fetch(detailUrl);
                     if (!detailResp.ok) throw new Error('Не удалось получить данные по товару');
                     const detailData = await detailResp.json();
@@ -618,7 +616,7 @@
                     // 2. Конкуренты
                     const nameParts = product.name.split('/');
                     const searchQuery = nameParts[0]?.trim() || product.name;
-                    const searchUrl = proxy + `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&page=1`;
+                    const searchUrl = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&page=1`);
                     const searchResp = await fetch(searchUrl);
                     if (!searchResp.ok) throw new Error('Не удалось найти конкурентов');
                     const searchData = await searchResp.json();
@@ -734,8 +732,8 @@
 
             async function fetchWildberriesData(query) {
                 try {
-                    const proxy = 'https://cors-anywhere.herokuapp.com/';
-                    const url = proxy + `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
+                    const proxy = 'https://api.allorigins.win/raw?url=';
+                    const url = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`);
                     const resp = await fetch(url);
                     if (!resp.ok) throw new Error('Ошибка API Wildberries');
                     const data = await resp.json();
