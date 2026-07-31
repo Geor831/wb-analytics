@@ -28,6 +28,7 @@
         .chat-panel { flex: 1; display: flex; flex-direction: column; padding: 16px; background: #f8fafc; overflow: hidden; }
         .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
         .chat-header .title { font-weight: 600; font-size: 18px; }
+        .chat-header .btn-group { display: flex; gap: 8px; }
         .chat-header .btn-new-chat { background: #e2e8f0; border: none; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; color: #1e293b; }
         .chat-header .btn-new-chat:hover { background: #2563eb; color: white; }
 
@@ -130,7 +131,7 @@
         </div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.1</div>
 </div>
 
 <!-- Модальное окно -->
@@ -272,16 +273,17 @@
         const config = chatConfig[tabName];
         if (!config) return;
 
-        // Строим HTML для панели
         let html = `
             <div class="chat-header">
                 <span class="title">${config.icon} ${config.name}</span>
-                <button class="btn-new-chat" id="newchat-${tabName}">➕ Новый чат</button>
+                <div class="btn-group">
+                    <button class="btn-new-chat" id="history-${tabName}">📂 История</button>
+                    <button class="btn-new-chat" id="newchat-${tabName}">➕ Новый чат</button>
+                </div>
             </div>
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
 
-        // Дополнительные элементы для конкретных чатов
         if (tabName === 'analytics') {
             html += `
                 <div class="file-upload-area">
@@ -293,7 +295,6 @@
             `;
         }
 
-        // Примеры для всех чатов
         const examplesMap = {
             analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
             improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
@@ -315,7 +316,6 @@
         });
         html += `</div>`;
 
-        // Поле ввода
         html += `
             <div class="chat-input-area">
                 <textarea id="${tabName}-input" rows="1" placeholder="Введите сообщение..."></textarea>
@@ -324,8 +324,6 @@
         `;
 
         panel.innerHTML = html;
-
-        // Инициализируем чат
         initChat(tabName);
     }
 
@@ -335,7 +333,7 @@
         const sendBtn = document.getElementById(`${tabName}-send`);
         const messagesId = `${tabName}-messages`;
 
-        // Проверяем, есть ли история, если нет — добавляем приветствие
+        // Проверяем историю, если пусто — добавляем приветствие
         const history = getChatHistory(tabName);
         if (history.length === 0) {
             const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
@@ -367,7 +365,43 @@
             });
         }
 
-        // Отправка сообщения
+        // Кнопка "История"
+        const historyBtn = document.getElementById(`history-${tabName}`);
+        if (historyBtn) {
+            historyBtn.addEventListener('click', function() {
+                const archives = [];
+                for (let key in localStorage) {
+                    if (key.startsWith(`archive_${tabName}_`)) {
+                        const timestamp = key.split('_')[2];
+                        const date = new Date(parseInt(timestamp)).toLocaleString();
+                        archives.push({ key, date });
+                    }
+                }
+                if (archives.length === 0) {
+                    alert('📭 Нет сохранённых архивов для этого чата.');
+                    return;
+                }
+                let msg = `📂 Архивы чата "${chatConfig[tabName].name}":\n\n`;
+                archives.forEach((a, i) => {
+                    msg += `${i+1}. ${a.date}\n`;
+                });
+                msg += '\nВведите номер для загрузки (0 - отмена):';
+                const choice = prompt(msg);
+                if (choice === null || choice === '0') return;
+                const idx = parseInt(choice) - 1;
+                if (idx >= 0 && idx < archives.length) {
+                    const selected = archives[idx];
+                    const archivedHistory = JSON.parse(localStorage.getItem(selected.key));
+                    // Заменяем текущую историю на архивную
+                    saveChatHistory(tabName, archivedHistory);
+                    renderMessages(tabName, messagesId);
+                } else {
+                    alert('Неверный номер.');
+                }
+            });
+        }
+
+        // Отправка
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -378,7 +412,7 @@
             }
         });
 
-        // Специальная обработка для аналитики (PDF)
+        // Специальная обработка для аналитики (PDF) — уже есть в renderChatPanel
         if (tabName === 'analytics') {
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
@@ -418,7 +452,6 @@
                     if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
                     const prompt = `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
                     const analysis = await callDeepSeek(prompt, "Ты — аналитик данных. Отвечай на русском. Используй таблицы для частотности и процентов.");
-                    // Удаляем индикатор
                     const history = getChatHistory(tabName);
                     if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
                         history.pop();
@@ -596,7 +629,7 @@
         addMessage(tabName, messagesId, 'user', text);
         input.value = '';
 
-        // Индикатор "печатает"
+        // Индикатор
         const typingId = 'typing_' + Date.now();
         const history = getChatHistory(tabName);
         history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
@@ -604,12 +637,10 @@
         renderMessages(tabName, messagesId);
 
         try {
-            // Определяем системный промпт и источник в зависимости от чата
             let systemPrompt = "Ты — эксперт по маркетплейсам. Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
             let source = 'AI-анализ на основе данных Wildberries';
             let prompt = text;
 
-            // Модифицируем промпт для разных чатов
             const prompts = {
                 improve: (t) => `Составь чек-лист из 5 рекомендаций по улучшению карточки на основе: ${t}. Используй таблицы для сравнения.`,
                 teach: (t) => `Ответь на вопрос или дай стратегии продажи дороже для: ${t}. Используй таблицы для сравнения стратегий.`,
@@ -626,7 +657,6 @@
                 prompt = prompts[tabName](text);
             }
 
-            // Специфичные системные промпты
             const systemPrompts = {
                 analytics: "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.",
                 competitors: "Ты — аналитик данных.",
@@ -642,11 +672,9 @@
             }
 
             const result = await callDeepSeek(prompt, systemPrompt);
-            // Удаляем индикатор
             const newHistory = getChatHistory(tabName);
             const filtered = newHistory.filter(msg => msg.id !== typingId);
             saveChatHistory(tabName, filtered);
-            // Добавляем ответ с источником
             addMessage(tabName, messagesId, 'ai', result, source);
         } catch (err) {
             const newHistory = getChatHistory(tabName);
@@ -752,11 +780,9 @@
 
     // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
     function switchChat(tabName) {
-        // Обновляем активный пункт в боковом меню
         document.querySelectorAll('.sidebar-item').forEach(el => {
             el.classList.toggle('active', el.dataset.tab === tabName);
         });
-        // Рендерим панель
         renderChatPanel(tabName);
     }
 
@@ -775,7 +801,6 @@
                 clearSession();
                 currentUser = null;
                 renderAuthBar();
-                // Перезагружаем текущий чат
                 const active = document.querySelector('.sidebar-item.active');
                 if (active) switchChat(active.dataset.tab);
             });
@@ -845,14 +870,12 @@
             setSession(login);
             modal.classList.remove('active');
             renderAuthBar();
-            // Обновляем текущий чат
             const active = document.querySelector('.sidebar-item.active');
             if (active) switchChat(active.dataset.tab);
         }
     });
 
     // ---------- ЗАПУСК ----------
-    // Обработчики кликов по элементам сайдбара
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.addEventListener('click', function() {
             const tab = this.dataset.tab;
@@ -860,7 +883,6 @@
         });
     });
 
-    // Загружаем активный чат (по умолчанию analytics)
     renderAuthBar();
     switchChat('analytics');
 
