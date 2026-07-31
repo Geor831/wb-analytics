@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WB.Analytics — 12 AI-чатов</title>
+    <title>WB.Analytics — 12 чатов</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
-        .container { max-width: 1100px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); padding: 20px 20px 30px; display: flex; flex-direction: column; height: 95vh; max-height: 1000px; }
-        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-        h1 { font-size: 26px; font-weight: 700; color: #0f172a; }
+        .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+        h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
         h1 span { color: #2563eb; }
         .subtitle { color: #64748b; font-size: 14px; }
 
@@ -18,60 +18,27 @@
         .auth-bar .btn-outline { background: transparent; border: 1px solid #2563eb; color: #2563eb; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; }
         .auth-bar .btn-outline:hover { background: #2563eb; color: white; }
 
-        .tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-btn { background: transparent; border: none; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; white-space: nowrap; border-radius: 8px 8px 0 0; }
-        .tab-btn:hover { color: #1e293b; background: #f1f5f9; }
-        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 280px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 12px 0; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; font-size: 14px; color: #475569; }
+        .sidebar-item:hover { background: #e2e8f0; color: #1e293b; }
+        .sidebar-item.active { background: #eff6ff; color: #2563eb; border-left-color: #2563eb; font-weight: 600; }
+        .sidebar-item .icon { font-size: 18px; width: 28px; text-align: center; }
 
-        .tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; animation: fade 0.2s; }
-        .tab-content.active { display: flex; }
-        @keyframes fade { from { opacity: 0.3; } to { opacity: 1; } }
-
-        .chat-container { display: flex; flex-direction: column; flex: 1; background: #f8fafc; border-radius: 16px; padding: 16px; overflow: hidden; }
-
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            flex-shrink: 0;
-        }
-        .chat-header .btn-new-chat {
-            background: #e2e8f0;
-            border: none;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #1e293b;
-        }
-        .chat-header .btn-new-chat:hover {
-            background: #2563eb;
-            color: white;
-        }
+        .chat-panel { flex: 1; display: flex; flex-direction: column; padding: 16px; background: #f8fafc; overflow: hidden; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+        .chat-header .title { font-weight: 600; font-size: 18px; }
+        .chat-header .btn-new-chat { background: #e2e8f0; border: none; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; color: #1e293b; }
+        .chat-header .btn-new-chat:hover { background: #2563eb; color: white; }
 
         .chat-messages { flex: 1; overflow-y: auto; margin-bottom: 8px; padding-right: 8px; }
         .chat-message { margin-bottom: 12px; display: flex; flex-direction: column; }
         .chat-message.user { align-items: flex-end; }
         .chat-message.ai { align-items: flex-start; }
-        .chat-message .bubble { max-width: 90%; padding: 12px 18px; border-radius: 16px; word-wrap: break-word; line-height: 1.6; font-size: 15px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .chat-message .bubble { max-width: 85%; padding: 12px 18px; border-radius: 16px; word-wrap: break-word; line-height: 1.6; font-size: 15px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
         .chat-message.user .bubble { background: #2563eb; color: white; border-bottom-right-radius: 4px; }
         .chat-message.ai .bubble { background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; }
-        .chat-message.ai .bubble .source {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 8px;
-            border-top: 1px solid #d1d5db;
-            padding-top: 6px;
-        }
-        .chat-message.ai .bubble .source a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-        .chat-message.ai .bubble .source a:hover {
-            text-decoration: underline;
-        }
+        .chat-message.ai .bubble .source { font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px solid #d1d5db; padding-top: 6px; }
 
         .bubble h3 { font-size: 17px; margin: 16px 0 8px 0; color: #0f172a; }
         .bubble h3:first-child { margin-top: 0; }
@@ -90,7 +57,7 @@
         .examples .chip { background: #e2e8f0; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #1e293b; cursor: pointer; transition: 0.2s; border: none; white-space: nowrap; }
         .examples .chip:hover { background: #2563eb; color: white; }
 
-        .chat-input-area { display: flex; gap: 10px; align-items: flex-end; background: white; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .chat-input-area { display: flex; gap: 10px; align-items: flex-end; background: white; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); flex-shrink: 0; }
         .chat-input-area textarea { flex: 1; border: none; padding: 8px 0; resize: none; font-family: inherit; font-size: 14px; outline: none; min-height: 40px; max-height: 120px; }
         .chat-input-area .btn { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .chat-input-area .btn:hover { background: #1d4ed8; }
@@ -101,6 +68,14 @@
         .file-upload-area .label:hover { background: #cbd5e1; }
         .file-upload-area input[type="file"] { display: none; }
         .file-upload-area .file-name { font-size: 13px; color: #475569; }
+
+        .typing-indicator { display: inline-block; background: #e2e8f0; padding: 8px 16px; border-radius: 16px; color: #1e293b; font-size: 14px; }
+        .typing-indicator span { display: inline-block; animation: blink 1.4s infinite both; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+
+        .footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 8px 0; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
         .modal.active { display: flex; }
@@ -114,29 +89,12 @@
         .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-outline:hover { background: #e2e8f0; }
 
-        .typing-indicator {
-            display: inline-block;
-            background: #e2e8f0;
-            padding: 8px 16px;
-            border-radius: 16px;
-            color: #1e293b;
-            font-size: 14px;
+        @media (max-width: 700px) {
+            .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+            .main-layout { flex-direction: column; }
+            .container { height: 98vh; max-height: none; }
+            .chat-panel { padding: 10px; }
         }
-        .typing-indicator span {
-            display: inline-block;
-            animation: blink 1.4s infinite both;
-        }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-
-        .footer { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
-
-        @media (max-width: 700px) { .container { padding: 12px; height: 98vh; max-height: none; } .tab-btn { padding: 6px 10px; font-size: 12px; } h1 { font-size: 20px; } }
     </style>
 </head>
 <body>
@@ -144,296 +102,55 @@
     <header>
         <div>
             <h1>WB.<span>Analytics</span></h1>
-            <div class="subtitle">12 AI-чатов с историей и источниками</div>
+            <div class="subtitle">12 AI-чатов</div>
         </div>
         <div class="auth-bar" id="authBar"></div>
     </header>
 
-    <!-- Модальное окно -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <h2 id="authModalTitle">Вход</h2>
-            <form id="authForm">
-                <label for="authLogin">Логин</label>
-                <input type="text" id="authLogin" placeholder="Введите логин" required>
-                <label for="authPassword">Пароль</label>
-                <input type="password" id="authPassword" placeholder="Введите пароль" required>
-                <button type="submit" class="btn" id="authSubmitBtn">Войти</button>
-            </form>
-            <div class="switch-link">
-                <span id="authSwitchText">Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a></span>
-            </div>
-            <div style="margin-top:10px; text-align:center;">
-                <button class="btn-outline" id="authCloseBtn">Закрыть</button>
-            </div>
+    <div class="main-layout">
+        <!-- Левая панель: список чатов -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item active" data-tab="analytics"><span class="icon">📊</span> Аналитика</div>
+            <div class="sidebar-item" data-tab="improve"><span class="icon">🔧</span> Улучшение</div>
+            <div class="sidebar-item" data-tab="teach"><span class="icon">🎓</span> Обучение</div>
+            <div class="sidebar-item" data-tab="competitors"><span class="icon">🏆</span> Конкуренты</div>
+            <div class="sidebar-item" data-tab="replies"><span class="icon">✍️</span> Ответы</div>
+            <div class="sidebar-item" data-tab="unit"><span class="icon">📈</span> Юнит</div>
+            <div class="sidebar-item" data-tab="marketing"><span class="icon">💡</span> Маркетинг</div>
+            <div class="sidebar-item" data-tab="stock"><span class="icon">📦</span> Запасы</div>
+            <div class="sidebar-item" data-tab="naming"><span class="icon">🎯</span> Нейминг</div>
+            <div class="sidebar-item" data-tab="niche"><span class="icon">🔍</span> Поиск ниш</div>
+            <div class="sidebar-item" data-tab="packaging"><span class="icon">📦</span> Упаковка</div>
+            <div class="sidebar-item" data-tab="suppliers"><span class="icon">🔗</span> Поставщики</div>
+        </div>
+
+        <!-- Правая панель: активный чат -->
+        <div class="chat-panel" id="chatPanel">
+            <!-- Содержимое будет динамически загружаться через JavaScript -->
         </div>
     </div>
 
-    <!-- 12 вкладок -->
-    <div class="tabs" id="tabContainer">
-        <button class="tab-btn active" data-tab="analytics">📊 Аналитика</button>
-        <button class="tab-btn" data-tab="improve">🔧 Улучшение</button>
-        <button class="tab-btn" data-tab="teach">🎓 Обучение</button>
-        <button class="tab-btn" data-tab="competitors">🏆 Конкуренты</button>
-        <button class="tab-btn" data-tab="replies">✍️ Ответы</button>
-        <button class="tab-btn" data-tab="unit">📈 Юнит</button>
-        <button class="tab-btn" data-tab="marketing">💡 Маркетинг</button>
-        <button class="tab-btn" data-tab="stock">📦 Запасы</button>
-        <button class="tab-btn" data-tab="naming">🎯 Нейминг</button>
-        <button class="tab-btn" data-tab="niche">🔍 Поиск ниш</button>
-        <button class="tab-btn" data-tab="packaging">📦 Упаковка</button>
-        <button class="tab-btn" data-tab="suppliers">🔗 Поставщики</button>
-    </div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.0</div>
+</div>
 
-    <!-- 12 чатов с кнопкой "Новый чат" -->
-    <!-- 1. Аналитика -->
-    <div id="analytics" class="tab-content active">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-analytics">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="analytics-messages"></div>
-            <div class="file-upload-area">
-                <label class="label" for="analytics-file">📎 Загрузить PDF</label>
-                <input type="file" id="analytics-file" accept=".pdf">
-                <span class="file-name" id="analytics-file-name">файл не выбран</span>
-                <button class="btn" id="analytics-upload-btn" disabled>Анализировать PDF</button>
-            </div>
-            <div class="examples" id="analytics-examples">
-                <button class="chip" data-target="analytics-input">Какие основные минусы?</button>
-                <button class="chip" data-target="analytics-input">Что чаще хвалят?</button>
-                <button class="chip" data-target="analytics-input">Сравни с конкурентами</button>
-                <button class="chip" data-target="analytics-input">Какой средний рейтинг?</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="analytics-input" rows="1" placeholder="Задайте вопрос..."></textarea>
-                <button class="btn" id="analytics-send">Отправить</button>
-            </div>
+<!-- Модальное окно -->
+<div class="modal" id="authModal">
+    <div class="modal-content">
+        <h2 id="authModalTitle">Вход</h2>
+        <form id="authForm">
+            <label for="authLogin">Логин</label>
+            <input type="text" id="authLogin" placeholder="Введите логин" required>
+            <label for="authPassword">Пароль</label>
+            <input type="password" id="authPassword" placeholder="Введите пароль" required>
+            <button type="submit" class="btn" id="authSubmitBtn">Войти</button>
+        </form>
+        <div class="switch-link">
+            <span id="authSwitchText">Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a></span>
+        </div>
+        <div style="margin-top:10px; text-align:center;">
+            <button class="btn-outline" id="authCloseBtn">Закрыть</button>
         </div>
     </div>
-
-    <!-- 2. Улучшение -->
-    <div id="improve" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-improve">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="improve-messages"></div>
-            <div class="examples" id="improve-examples">
-                <button class="chip" data-target="improve-input">Как улучшить карточку?</button>
-                <button class="chip" data-target="improve-input">Что добавить в описание?</button>
-                <button class="chip" data-target="improve-input">Советы по фото</button>
-                <button class="chip" data-target="improve-input">Как повысить рейтинг?</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="improve-input" rows="1" placeholder="Напишите, что хотите улучшить..."></textarea>
-                <button class="btn" id="improve-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Обучение -->
-    <div id="teach" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-teach">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="teach-messages"></div>
-            <div class="examples" id="teach-examples">
-                <button class="chip" data-target="teach-input">Как поднять цену?</button>
-                <button class="chip" data-target="teach-input">Что добавить для премиум-позиционирования?</button>
-                <button class="chip" data-target="teach-input">Стратегия для дорогого товара</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="teach-input" rows="1" placeholder="Вопрос по продажам..."></textarea>
-                <button class="btn" id="teach-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. Конкуренты -->
-    <div id="competitors" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-competitors">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="competitors-messages"></div>
-            <div class="examples" id="competitors-examples">
-                <button class="chip" data-target="competitors-input">157065568, 157065569</button>
-                <button class="chip" data-target="competitors-input">61472739, 157065568</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="competitors-input" rows="1" placeholder="Артикулы через запятую..."></textarea>
-                <button class="btn" id="competitors-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. Ответы -->
-    <div id="replies" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-replies">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="replies-messages"></div>
-            <div class="examples" id="replies-examples">
-                <button class="chip" data-target="replies-input">Товар не соответствует описанию, разочарован.</button>
-                <button class="chip" data-target="replies-input">Долго ждал доставку.</button>
-                <button class="chip" data-target="replies-input">Отличный товар, но дорого.</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="replies-input" rows="1" placeholder="Вставьте отзыв..."></textarea>
-                <button class="btn" id="replies-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. Юнит -->
-    <div id="unit" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-unit">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="unit-messages"></div>
-            <div class="examples" id="unit-examples">
-                <button class="chip" data-target="unit-input">500, 200, 50, 30, 20</button>
-                <button class="chip" data-target="unit-input">1000, 400, 100, 50, 30</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="unit-input" rows="1" placeholder="цена,себестоимость,логистика,комиссия,реклама"></textarea>
-                <button class="btn" id="unit-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. Маркетинг -->
-    <div id="marketing" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-marketing">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="marketing-messages"></div>
-            <div class="examples" id="marketing-examples">
-                <button class="chip" data-target="marketing-input">Кокосовые сливки</button>
-                <button class="chip" data-target="marketing-input">Натуральный мёд</button>
-                <button class="chip" data-target="marketing-input">Органический кофе</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="marketing-input" rows="1" placeholder="Опишите товар (2-3 слова)..."></textarea>
-                <button class="btn" id="marketing-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 8. Запасы -->
-    <div id="stock" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-stock">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="stock-messages"></div>
-            <div class="examples" id="stock-examples">
-                <button class="chip" data-target="stock-input">61472739</button>
-                <button class="chip" data-target="stock-input">157065568</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="stock-input" rows="1" placeholder="Введите артикул..."></textarea>
-                <button class="btn" id="stock-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 9. Нейминг -->
-    <div id="naming" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-naming">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="naming-messages"></div>
-            <div class="examples" id="naming-examples">
-                <button class="chip" data-target="naming-input">Кокосовые сливки натуральные, без сахара</button>
-                <button class="chip" data-target="naming-input">Органический мёд, цветочный</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="naming-input" rows="1" placeholder="Опишите товар..."></textarea>
-                <button class="btn" id="naming-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 10. Поиск ниш -->
-    <div id="niche" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-niche">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="niche-messages"></div>
-            <div class="examples" id="niche-examples">
-                <button class="chip" data-target="niche-input">Найди нишу до 1000 ₽ с маржой >30%</button>
-                <button class="chip" data-target="niche-input">Проанализируй нишу "кокосовые сливки"</button>
-                <button class="chip" data-target="niche-input">Какие ниши растут прямо сейчас?</button>
-                <button class="chip" data-target="niche-input">Что продавать новичку на WB?</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="niche-input" rows="1" placeholder="Напишите запрос по поиску ниши..."></textarea>
-                <button class="btn" id="niche-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 11. Упаковка -->
-    <div id="packaging" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-packaging">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="packaging-messages"></div>
-            <div class="examples" id="packaging-examples">
-                <button class="chip" data-target="packaging-input">Как упаковать хрупкий товар?</button>
-                <button class="chip" data-target="packaging-input">Требования WB к упаковке</button>
-                <button class="chip" data-target="packaging-input">Какие материалы выбрать?</button>
-                <button class="chip" data-target="packaging-input">Ошибки в упаковке и штрафы</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="packaging-input" rows="1" placeholder="Спросите про упаковку..."></textarea>
-                <button class="btn" id="packaging-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 12. Поставщики -->
-    <div id="suppliers" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div></div>
-                <button class="btn-new-chat" id="newchat-suppliers">➕ Новый чат</button>
-            </div>
-            <div class="chat-messages" id="suppliers-messages"></div>
-            <div class="examples" id="suppliers-examples">
-                <button class="chip" data-target="suppliers-input">Где закупать коробки для WB?</button>
-                <button class="chip" data-target="suppliers-input">Как найти поставщика товара?</button>
-                <button class="chip" data-target="suppliers-input">Чек-лист проверки поставщика</button>
-                <button class="chip" data-target="suppliers-input">Оптовые закупки в Китае</button>
-            </div>
-            <div class="chat-input-area">
-                <textarea id="suppliers-input" rows="1" placeholder="Спросите про поставщиков..."></textarea>
-                <button class="btn" id="suppliers-send">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 8.0 (новый чат + источники)</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -468,6 +185,7 @@
         }
     }
 
+    // ---------- ХРАНЕНИЕ ИСТОРИИ ----------
     function getHistoryKey(tabName) {
         return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
     }
@@ -479,21 +197,23 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    function addMessage(tabName, containerId, role, content, source) {
-        const history = getChatHistory(tabName);
-        history.push({ role, content, source: source || null });
-        saveChatHistory(tabName, history);
-        renderMessages(tabName, containerId);
-        if (role === 'ai' && currentUser) {
-            const users = getUsers();
-            if (users[currentUser]) {
-                users[currentUser].requests = (users[currentUser].requests || 0) + 1;
-                saveUsers(users);
-                renderAuthBar();
-            }
-        }
-    }
+    // ---------- СПИСОК ЧАТОВ ----------
+    const chatConfig = {
+        analytics: { name: 'Аналитика', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
+        improve: { name: 'Улучшение', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
+        teach: { name: 'Обучение', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
+        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
+        replies: { name: 'Ответы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
+        unit: { name: 'Юнит', icon: '📈', welcome: '👋 Введите 5 чисел для расчёта юнит-экономики.' },
+        marketing: { name: 'Маркетинг', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
+        stock: { name: 'Запасы', icon: '📦', welcome: '👋 Введите артикул для прогноза спроса.' },
+        naming: { name: 'Нейминг', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
+        niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Напишите запрос для поиска ниши.' },
+        packaging: { name: 'Упаковка', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
+        suppliers: { name: 'Поставщики', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
+    };
 
+    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ----------
     function renderMessages(tabName, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -519,28 +239,21 @@
         container.scrollTop = container.scrollHeight;
     }
 
-    function loadChatHistory(tabName) {
-        const containerIdMap = {
-            analytics: 'analytics-messages',
-            improve: 'improve-messages',
-            teach: 'teach-messages',
-            competitors: 'competitors-messages',
-            replies: 'replies-messages',
-            unit: 'unit-messages',
-            marketing: 'marketing-messages',
-            stock: 'stock-messages',
-            naming: 'naming-messages',
-            niche: 'niche-messages',
-            packaging: 'packaging-messages',
-            suppliers: 'suppliers-messages'
-        };
-        const containerId = containerIdMap[tabName];
-        if (containerId) {
-            renderMessages(tabName, containerId);
+    function addMessage(tabName, containerId, role, content, source) {
+        const history = getChatHistory(tabName);
+        history.push({ role, content, source: source || null });
+        saveChatHistory(tabName, history);
+        renderMessages(tabName, containerId);
+        if (role === 'ai' && currentUser) {
+            const users = getUsers();
+            if (users[currentUser]) {
+                users[currentUser].requests = (users[currentUser].requests || 0) + 1;
+                saveUsers(users);
+                renderAuthBar();
+            }
         }
     }
 
-    // ---------- НОВЫЙ ЧАТ ----------
     function resetChat(tabName) {
         const history = getChatHistory(tabName);
         if (history.length > 0) {
@@ -549,126 +262,407 @@
         }
         saveChatHistory(tabName, []);
         const containerId = tabName + '-messages';
-        // Добавляем приветствие для каждого чата
-        const welcomeTexts = {
-            analytics: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.',
-            improve: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.',
-            teach: '👋 Отвечайте на вопросы, я помогу продавать дороже.',
-            competitors: '👋 Введите артикулы конкурентов через запятую.',
-            replies: '👋 Вставьте отзыв для генерации ответов.',
-            unit: '👋 Введите 5 чисел для расчёта юнит-экономики.',
-            marketing: '👋 Опишите товар, я предложу идеи продвижения.',
-            stock: '👋 Введите артикул для прогноза спроса.',
-            naming: '👋 Опишите товар для генерации названий и слоганов.',
-            niche: '👋 Напишите запрос для поиска ниши.',
-            packaging: '👋 Спросите про упаковку товара.',
-            suppliers: '👋 Спросите про поставщиков.'
-        };
-        const welcome = welcomeTexts[tabName] || '👋 Новый чат. Задайте вопрос.';
+        const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
         addMessage(tabName, containerId, 'ai', welcome);
     }
 
-    // ---------- ПРОФИЛЬ ----------
-    function renderAuthBar() {
-        const bar = document.getElementById('authBar');
-        if (currentUser) {
-            const users = getUsers();
-            const data = users[currentUser] || {};
-            bar.innerHTML = `
-                <span class="user-name">👤 ${currentUser}</span>
-                <span style="font-size:13px; color:#64748b;">${data.requests || 0} запросов</span>
-                <button class="btn-outline" id="logoutBtn">Выйти</button>
+    // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
+    function renderChatPanel(tabName) {
+        const panel = document.getElementById('chatPanel');
+        const config = chatConfig[tabName];
+        if (!config) return;
+
+        // Строим HTML для панели
+        let html = `
+            <div class="chat-header">
+                <span class="title">${config.icon} ${config.name}</span>
+                <button class="btn-new-chat" id="newchat-${tabName}">➕ Новый чат</button>
+            </div>
+            <div class="chat-messages" id="${tabName}-messages"></div>
+        `;
+
+        // Дополнительные элементы для конкретных чатов
+        if (tabName === 'analytics') {
+            html += `
+                <div class="file-upload-area">
+                    <label class="label" for="analytics-file">📎 Загрузить PDF</label>
+                    <input type="file" id="analytics-file" accept=".pdf">
+                    <span class="file-name" id="analytics-file-name">файл не выбран</span>
+                    <button class="btn" id="analytics-upload-btn" disabled>Анализировать PDF</button>
+                </div>
             `;
-            document.getElementById('logoutBtn').addEventListener('click', function() {
-                clearSession();
-                currentUser = null;
-                renderAuthBar();
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    const tabId = tab.id;
-                    const containerId = tabId + '-messages';
-                    if (document.getElementById(containerId)) {
-                        renderMessages(tabId, containerId);
-                    }
-                });
-            });
-        } else {
-            bar.innerHTML = `
-                <button class="btn-outline" id="loginBtn">Войти</button>
-                <button class="btn-outline" id="registerBtn">Регистрация</button>
-            `;
-            document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
-            document.getElementById('registerBtn').addEventListener('click', () => openAuthModal('register'));
         }
-    }
 
-    // ---------- МОДАЛЬНОЕ ОКНО ----------
-    const modal = document.getElementById('authModal');
-    const modalTitle = document.getElementById('authModalTitle');
-    const authForm = document.getElementById('authForm');
-    const authSubmitBtn = document.getElementById('authSubmitBtn');
-    const authSwitchText = document.getElementById('authSwitchText');
-    const authSwitchLink = document.getElementById('authSwitchLink');
-    const authCloseBtn = document.getElementById('authCloseBtn');
-
-    let authMode = 'login';
-
-    function openAuthModal(mode) {
-        authMode = mode;
-        if (mode === 'login') {
-            modalTitle.textContent = 'Вход';
-            authSubmitBtn.textContent = 'Войти';
-            authSwitchText.innerHTML = 'Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a>';
-        } else {
-            modalTitle.textContent = 'Регистрация';
-            authSubmitBtn.textContent = 'Зарегистрироваться';
-            authSwitchText.innerHTML = 'Уже есть аккаунт? <a id="authSwitchLink">Войти</a>';
-        }
-        document.getElementById('authLogin').value = '';
-        document.getElementById('authPassword').value = '';
-        modal.classList.add('active');
-        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            openAuthModal(authMode === 'login' ? 'register' : 'login');
+        // Примеры для всех чатов
+        const examplesMap = {
+            analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
+            improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
+            teach: ['Как поднять цену?', 'Что добавить для премиум-позиционирования?', 'Стратегия для дорогого товара'],
+            competitors: ['157065568, 157065569', '61472739, 157065568'],
+            replies: ['Товар не соответствует описанию, разочарован.', 'Долго ждал доставку.', 'Отличный товар, но дорого.'],
+            unit: ['500, 200, 50, 30, 20', '1000, 400, 100, 50, 30'],
+            marketing: ['Кокосовые сливки', 'Натуральный мёд', 'Органический кофе'],
+            stock: ['61472739', '157065568'],
+            naming: ['Кокосовые сливки натуральные, без сахара', 'Органический мёд, цветочный'],
+            niche: ['Найди нишу до 1000 ₽ с маржой >30%', 'Проанализируй нишу "кокосовые сливки"', 'Какие ниши растут прямо сейчас?', 'Что продавать новичку на WB?'],
+            packaging: ['Как упаковать хрупкий товар?', 'Требования WB к упаковке', 'Какие материалы выбрать?', 'Ошибки в упаковке и штрафы'],
+            suppliers: ['Где закупать коробки для WB?', 'Как найти поставщика товара?', 'Чек-лист проверки поставщика', 'Оптовые закупки в Китае']
+        };
+        const examples = examplesMap[tabName] || ['Напишите свой запрос...'];
+        html += `<div class="examples" id="${tabName}-examples">`;
+        examples.forEach(ex => {
+            html += `<button class="chip" data-target="${tabName}-input">${ex}</button>`;
         });
+        html += `</div>`;
+
+        // Поле ввода
+        html += `
+            <div class="chat-input-area">
+                <textarea id="${tabName}-input" rows="1" placeholder="Введите сообщение..."></textarea>
+                <button class="btn" id="${tabName}-send">Отправить</button>
+            </div>
+        `;
+
+        panel.innerHTML = html;
+
+        // Инициализируем чат
+        initChat(tabName);
     }
 
-    authCloseBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+    // ---------- ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА ----------
+    function initChat(tabName) {
+        const input = document.getElementById(`${tabName}-input`);
+        const sendBtn = document.getElementById(`${tabName}-send`);
+        const messagesId = `${tabName}-messages`;
 
-    authForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const login = document.getElementById('authLogin').value.trim();
-        const password = document.getElementById('authPassword').value.trim();
-        if (!login || !password) { alert('Заполните все поля.'); return; }
-        const users = getUsers();
-        if (authMode === 'register') {
-            if (users[login]) { alert('Пользователь с таким логином уже существует.'); return; }
-            users[login] = { password, registered: Date.now(), requests: 0 };
-            saveUsers(users);
-            alert('Регистрация успешна! Теперь войдите.');
-            openAuthModal('login');
-            return;
+        // Проверяем, есть ли история, если нет — добавляем приветствие
+        const history = getChatHistory(tabName);
+        if (history.length === 0) {
+            const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
+            addMessage(tabName, messagesId, 'ai', welcome);
         } else {
-            if (!users[login] || users[login].password !== password) {
-                alert('Неверный логин или пароль.');
-                return;
-            }
-            currentUser = login;
-            setSession(login);
-            modal.classList.remove('active');
-            renderAuthBar();
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                const tabId = tab.id;
-                const containerId = tabId + '-messages';
-                if (document.getElementById(containerId)) {
-                    renderMessages(tabId, containerId);
+            renderMessages(tabName, messagesId);
+        }
+
+        // Обработка примеров
+        const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
+        examples.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const targetId = this.dataset.target;
+                const targetInput = document.getElementById(targetId);
+                if (targetInput) {
+                    targetInput.value = this.textContent.trim();
+                    targetInput.focus();
+                }
+            });
+        });
+
+        // Кнопка "Новый чат"
+        const newChatBtn = document.getElementById(`newchat-${tabName}`);
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', function() {
+                if (confirm('Начать новый чат? Текущая история сохранится в архиве.')) {
+                    resetChat(tabName);
                 }
             });
         }
-    });
 
-    // ---------- AI И ФОРМАТИРОВАНИЕ ----------
-    async function callDeepSeek(prompt, systemPrompt = "Ты — эксперт по маркетплейсам. Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.") {
+        // Отправка сообщения
+        sendBtn.addEventListener('click', function() {
+            sendChatMessage(tabName);
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage(tabName);
+            }
+        });
+
+        // Специальная обработка для аналитики (PDF)
+        if (tabName === 'analytics') {
+            const fileInput = document.getElementById('analytics-file');
+            const uploadBtn = document.getElementById('analytics-upload-btn');
+            const fileName = document.getElementById('analytics-file-name');
+            let currentFile = null;
+
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    currentFile = this.files[0];
+                    fileName.textContent = currentFile.name;
+                    uploadBtn.disabled = false;
+                } else {
+                    currentFile = null;
+                    fileName.textContent = 'файл не выбран';
+                    uploadBtn.disabled = true;
+                }
+            });
+
+            uploadBtn.addEventListener('click', async function() {
+                if (!currentFile) { alert('Выберите PDF.'); return; }
+                addMessage(tabName, messagesId, 'user', `📄 Загружен файл: ${currentFile.name}`);
+                const loadingMsg = '⏳ Анализирую PDF...';
+                addMessage(tabName, messagesId, 'ai', loadingMsg);
+                this.disabled = true;
+                try {
+                    const arrayBuffer = await currentFile.arrayBuffer();
+                    const pdfjsLib = window.pdfjsLib;
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdf = await loadingTask.promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+                    }
+                    if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
+                    const prompt = `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
+                    const analysis = await callDeepSeek(prompt, "Ты — аналитик данных. Отвечай на русском. Используй таблицы для частотности и процентов.");
+                    // Удаляем индикатор
+                    const history = getChatHistory(tabName);
+                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
+                        history.pop();
+                        saveChatHistory(tabName, history);
+                    }
+                    addMessage(tabName, messagesId, 'ai', analysis, 'Анализ PDF-файла с отзывами');
+                } catch (err) {
+                    const history = getChatHistory(tabName);
+                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
+                        history.pop();
+                        saveChatHistory(tabName, history);
+                    }
+                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+                } finally {
+                    this.disabled = false;
+                    currentFile = null;
+                    fileName.textContent = 'файл не выбран';
+                    fileInput.value = '';
+                }
+            });
+        }
+
+        // Специальная обработка для юнита (без AI)
+        if (tabName === 'unit') {
+            const unitInput = document.getElementById('unit-input');
+            const unitSend = document.getElementById('unit-send');
+            unitSend.addEventListener('click', function() {
+                const text = unitInput.value.trim();
+                if (!text) return;
+                const parts = text.split(',').map(x => parseFloat(x.trim()));
+                if (parts.length !== 5 || parts.some(isNaN)) {
+                    addMessage(tabName, messagesId, 'ai', '❌ Введите 5 чисел через запятую: цена, себестоимость, логистика, комиссия, реклама.');
+                    return;
+                }
+                addMessage(tabName, messagesId, 'user', text);
+                const [price, cost, logistics, commission, ad] = parts;
+                const margin = price - cost - logistics - commission - ad;
+                const marginPct = (margin / price) * 100;
+                const table = `
+| Показатель | Значение |
+|------------|----------|
+| Цена | ${price} ₽ |
+| Себестоимость | ${cost} ₽ |
+| Логистика | ${logistics} ₽ |
+| Комиссия | ${commission} ₽ |
+| Реклама | ${ad} ₽ |
+| **Прибыль** | **${margin.toFixed(2)} ₽** |
+| **Маржинальность** | **${marginPct.toFixed(1)}%** |
+`;
+                addMessage(tabName, messagesId, 'ai', table, 'Расчёт на основе введённых данных');
+                unitInput.value = '';
+            });
+            unitInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); unitSend.click(); }
+            });
+        }
+
+        // Специальная обработка для поиска ниш (парсинг WB)
+        if (tabName === 'niche') {
+            const nicheInput = document.getElementById('niche-input');
+            const nicheSend = document.getElementById('niche-send');
+
+            async function fetchWildberriesData(query) {
+                try {
+                    const url = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error('Ошибка API Wildberries');
+                    const data = await resp.json();
+                    const products = data.data?.products || [];
+                    const results = products.slice(0, 20).map(p => ({
+                        name: p.name || '',
+                        price: p.sizes?.[0]?.price?.product / 100 || 0,
+                        rating: p.rating || 0,
+                        feedbacks: p.feedbacks || 0,
+                        brand: p.brand || '',
+                        seller: p.supplier || ''
+                    }));
+                    return results;
+                } catch (e) {
+                    console.error('Ошибка сбора данных WB:', e);
+                    return null;
+                }
+            }
+
+            nicheSend.addEventListener('click', async function() {
+                const text = nicheInput.value.trim();
+                if (!text) return;
+                nicheSend.disabled = true;
+                nicheInput.disabled = true;
+
+                addMessage(tabName, messagesId, 'user', text);
+                nicheInput.value = '';
+
+                // Индикатор
+                const typingId = 'typing_' + Date.now();
+                const history = getChatHistory(tabName);
+                history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
+                saveChatHistory(tabName, history);
+                renderMessages(tabName, messagesId);
+
+                try {
+                    let searchQuery = text;
+                    const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
+                    let words = text.split(/\s+/);
+                    let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
+                    if (filtered.length > 0) {
+                        searchQuery = filtered.join(' ');
+                    }
+
+                    const rawData = await fetchWildberriesData(searchQuery);
+                    if (!rawData || rawData.length === 0) {
+                        const newHistory = getChatHistory(tabName);
+                        const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                        saveChatHistory(tabName, filtered2);
+                        renderMessages(tabName, messagesId);
+                        addMessage(tabName, messagesId, 'ai',
+                            `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"\n\nПосле этого я проанализирую данные и дам рекомендации по нише.`,
+                            'Данные с Wildberries'
+                        );
+                        return;
+                    }
+
+                    const dataStr = JSON.stringify(rawData.slice(0, 15), null, 2);
+                    const prompt = `Пользователь ищет нишу: "${text}".
+                    Вот данные с Wildberries по запросу (первые 15 товаров):
+                    ${dataStr}
+
+                    Проанализируй эти данные и дай рекомендацию:
+                    1. Топ-3 ниши (или категории) на основе этих данных.
+                    2. Для каждой ниши укажи: среднюю цену, конкуренцию (оцени по количеству продавцов и отзывов), потенциал маржинальности (оцени).
+                    3. Дай краткие рекомендации, стоит ли входить в эту нишу и с чего начать.
+                    4. Если данных недостаточно, укажи, какие ещё данные нужны.
+
+                    Ответ структурируй: заголовки ###, списки, таблицы.`;
+
+                    const aiResponse = await callDeepSeek(prompt, "Ты — эксперт по маркетплейсам и поиску ниш.");
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
+                } catch (err) {
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+                } finally {
+                    nicheSend.disabled = false;
+                    nicheInput.disabled = false;
+                    nicheInput.focus();
+                }
+            });
+
+            nicheInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    nicheSend.click();
+                }
+            });
+        }
+    }
+
+    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ (с индикатором) ----------
+    async function sendChatMessage(tabName) {
+        const input = document.getElementById(`${tabName}-input`);
+        const sendBtn = document.getElementById(`${tabName}-send`);
+        const messagesId = `${tabName}-messages`;
+        const text = input.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        input.disabled = true;
+
+        addMessage(tabName, messagesId, 'user', text);
+        input.value = '';
+
+        // Индикатор "печатает"
+        const typingId = 'typing_' + Date.now();
+        const history = getChatHistory(tabName);
+        history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
+        saveChatHistory(tabName, history);
+        renderMessages(tabName, messagesId);
+
+        try {
+            // Определяем системный промпт и источник в зависимости от чата
+            let systemPrompt = "Ты — эксперт по маркетплейсам. Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
+            let source = 'AI-анализ на основе данных Wildberries';
+            let prompt = text;
+
+            // Модифицируем промпт для разных чатов
+            const prompts = {
+                improve: (t) => `Составь чек-лист из 5 рекомендаций по улучшению карточки на основе: ${t}. Используй таблицы для сравнения.`,
+                teach: (t) => `Ответь на вопрос или дай стратегии продажи дороже для: ${t}. Используй таблицы для сравнения стратегий.`,
+                competitors: (t) => `Проанализируй конкурентов по артикулам: ${t}. Сравни цены, рейтинги, отзывы. Используй таблицу.`,
+                replies: (t) => `Напиши 3 варианта ответа на отзыв: ${t}. Представь в виде таблицы: стиль, текст.`,
+                marketing: (t) => `Для товара "${t}" предложи 5 идей продвижения. Используй таблицу: идея, описание, бюджет.`,
+                stock: (t) => `Спрогнозируй спрос на товар ${t}. Дай рекомендации по закупкам в виде таблицы: месяц, прогноз, рекомендация.`,
+                naming: (t) => `Для товара "${t}" предложи 10 названий, 5 слоганов и 3 УТП. Используй таблицы для группировки.`,
+                packaging: (t) => `Ответь на вопрос об упаковке товара для Wildberries: ${t}. Дай рекомендации по материалам, требованиям площадки, типичным ошибкам. Если есть конкретный товар, учти его хрупкость и габариты.`,
+                suppliers: (t) => `Ответь на вопрос о поиске поставщиков для Wildberries: ${t}. Подскажи, где искать (каналы, платформы), дай чек-лист проверки надёжности, расскажи про нюансы импорта и оптовых закупок.`
+            };
+
+            if (prompts[tabName]) {
+                prompt = prompts[tabName](text);
+            }
+
+            // Специфичные системные промпты
+            const systemPrompts = {
+                analytics: "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.",
+                competitors: "Ты — аналитик данных.",
+                replies: "Ты — специалист по работе с клиентами.",
+                marketing: "Ты — маркетолог.",
+                stock: "Ты — логист.",
+                naming: "Ты — копирайтер.",
+                packaging: "Ты — эксперт по упаковке для маркетплейсов. Знаешь требования Wildberries к упаковке (габариты, вес, маркировка, амортизация). Даёшь практические советы.",
+                suppliers: "Ты — эксперт по закупкам для маркетплейсов. Знаешь каналы поиска поставщиков (B2B-каталоги, Wildberries для бизнеса, выставки, Китай). Советуешь как минимизировать риски."
+            };
+            if (systemPrompts[tabName]) {
+                systemPrompt = systemPrompts[tabName] + " Отвечай на русском, структурированно. Используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---.";
+            }
+
+            const result = await callDeepSeek(prompt, systemPrompt);
+            // Удаляем индикатор
+            const newHistory = getChatHistory(tabName);
+            const filtered = newHistory.filter(msg => msg.id !== typingId);
+            saveChatHistory(tabName, filtered);
+            // Добавляем ответ с источником
+            addMessage(tabName, messagesId, 'ai', result, source);
+        } catch (err) {
+            const newHistory = getChatHistory(tabName);
+            const filtered = newHistory.filter(msg => msg.id !== typingId);
+            saveChatHistory(tabName, filtered);
+            renderMessages(tabName, messagesId);
+            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+        } finally {
+            sendBtn.disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    // ---------- AI ВЫЗОВ ----------
+    async function callDeepSeek(prompt, systemPrompt) {
         const url = "https://api.aitunnel.ru/v1/chat/completions";
         const headers = { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" };
         const payload = {
@@ -686,6 +680,7 @@
         return data.choices[0].message.content;
     }
 
+    // ---------- ФОРМАТИРОВАНИЕ ОТВЕТА ----------
     function convertMarkdownTables(text) {
         const lines = text.split('\n');
         let result = [], i = 0;
@@ -755,428 +750,119 @@
         return html;
     }
 
-    // ---------- ОБЩАЯ ОТПРАВКА С ИНДИКАТОРОМ ----------
-    async function sendChatMessage(tabName, inputId, sendBtnId, messagesId, getPromptFn, systemPrompt, source) {
-        const input = document.getElementById(inputId);
-        const sendBtn = document.getElementById(sendBtnId);
-        const text = input.value.trim();
-        if (!text) return;
-        sendBtn.disabled = true;
-        input.disabled = true;
+    // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
+    function switchChat(tabName) {
+        // Обновляем активный пункт в боковом меню
+        document.querySelectorAll('.sidebar-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.tab === tabName);
+        });
+        // Рендерим панель
+        renderChatPanel(tabName);
+    }
 
-        addMessage(tabName, messagesId, 'user', text);
-        input.value = '';
-
-        // Добавляем индикатор "печатает"
-        const typingId = 'typing_' + Date.now();
-        const history = getChatHistory(tabName);
-        history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
-        saveChatHistory(tabName, history);
-        renderMessages(tabName, messagesId);
-
-        let prompt = text;
-        if (typeof getPromptFn === 'function') {
-            prompt = getPromptFn(text);
-        }
-
-        try {
-            const result = await callDeepSeek(prompt, systemPrompt);
-            // Удаляем индикатор
-            const newHistory = getChatHistory(tabName);
-            const filtered = newHistory.filter(msg => msg.id !== typingId);
-            saveChatHistory(tabName, filtered);
-            // Добавляем ответ с источником
-            const sourceText = source || 'AI-анализ на основе данных Wildberries';
-            addMessage(tabName, messagesId, 'ai', result, sourceText);
-        } catch (err) {
-            const newHistory = getChatHistory(tabName);
-            const filtered = newHistory.filter(msg => msg.id !== typingId);
-            saveChatHistory(tabName, filtered);
-            renderMessages(tabName, messagesId);
-            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-        } finally {
-            sendBtn.disabled = false;
-            input.disabled = false;
-            input.focus();
+    // ---------- ПРОФИЛЬ ----------
+    function renderAuthBar() {
+        const bar = document.getElementById('authBar');
+        if (currentUser) {
+            const users = getUsers();
+            const data = users[currentUser] || {};
+            bar.innerHTML = `
+                <span class="user-name">👤 ${currentUser}</span>
+                <span style="font-size:13px; color:#64748b;">${data.requests || 0} запросов</span>
+                <button class="btn-outline" id="logoutBtn">Выйти</button>
+            `;
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                clearSession();
+                currentUser = null;
+                renderAuthBar();
+                // Перезагружаем текущий чат
+                const active = document.querySelector('.sidebar-item.active');
+                if (active) switchChat(active.dataset.tab);
+            });
+        } else {
+            bar.innerHTML = `
+                <button class="btn-outline" id="loginBtn">Войти</button>
+                <button class="btn-outline" id="registerBtn">Регистрация</button>
+            `;
+            document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
+            document.getElementById('registerBtn').addEventListener('click', () => openAuthModal('register'));
         }
     }
 
-    function initChat(tabName, inputId, sendBtnId, messagesId, welcomeText, getPromptFn, systemPrompt, source) {
-        const fullSystem = systemPrompt + " Если данные можно представить в виде таблицы, используй Markdown-таблицы с | и ---. Отвечай только на русском.";
-        const sendBtn = document.getElementById(sendBtnId);
-        const input = document.getElementById(inputId);
+    // ---------- МОДАЛЬНОЕ ОКНО ----------
+    const modal = document.getElementById('authModal');
+    const modalTitle = document.getElementById('authModalTitle');
+    const authForm = document.getElementById('authForm');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authSwitchText = document.getElementById('authSwitchText');
+    const authSwitchLink = document.getElementById('authSwitchLink');
+    const authCloseBtn = document.getElementById('authCloseBtn');
 
-        // Проверяем, есть ли история, если нет — добавляем приветствие
-        const history = getChatHistory(tabName);
-        if (history.length === 0) {
-            addMessage(tabName, messagesId, 'ai', welcomeText);
+    let authMode = 'login';
+
+    function openAuthModal(mode) {
+        authMode = mode;
+        if (mode === 'login') {
+            modalTitle.textContent = 'Вход';
+            authSubmitBtn.textContent = 'Войти';
+            authSwitchText.innerHTML = 'Нет аккаунта? <a id="authSwitchLink">Зарегистрироваться</a>';
         } else {
-            renderMessages(tabName, messagesId);
+            modalTitle.textContent = 'Регистрация';
+            authSubmitBtn.textContent = 'Зарегистрироваться';
+            authSwitchText.innerHTML = 'Уже есть аккаунт? <a id="authSwitchLink">Войти</a>';
         }
-
-        // Обработка примеров (чипов)
-        const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
-        examples.forEach(chip => {
-            chip.addEventListener('click', function() {
-                const targetId = this.dataset.target;
-                const targetInput = document.getElementById(targetId);
-                if (targetInput) {
-                    targetInput.value = this.textContent.trim();
-                    targetInput.focus();
-                }
-            });
-        });
-
-        // Кнопка "Новый чат"
-        const newChatBtn = document.getElementById(`newchat-${tabName}`);
-        if (newChatBtn) {
-            newChatBtn.addEventListener('click', function() {
-                if (confirm('Начать новый чат? Текущая история сохранится в архиве.')) {
-                    resetChat(tabName);
-                }
-            });
-        }
-
-        sendBtn.addEventListener('click', function() {
-            sendChatMessage(tabName, inputId, sendBtnId, messagesId, getPromptFn, fullSystem, source);
-        });
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendChatMessage(tabName, inputId, sendBtnId, messagesId, getPromptFn, fullSystem, source);
-            }
+        document.getElementById('authLogin').value = '';
+        document.getElementById('authPassword').value = '';
+        modal.classList.add('active');
+        document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            openAuthModal(authMode === 'login' ? 'register' : 'login');
         });
     }
 
-    // ---------- ИНИЦИАЛИЗАЦИЯ ВСЕХ ЧАТОВ (12) ----------
+    authCloseBtn.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
 
-    // 1. Аналитика (с PDF) — специальная обработка
-    const analyticsInput = document.getElementById('analytics-input');
-    const analyticsSend = document.getElementById('analytics-send');
-    const analyticsFileInput = document.getElementById('analytics-file');
-    const analyticsUploadBtn = document.getElementById('analytics-upload-btn');
-    const analyticsFileName = document.getElementById('analytics-file-name');
-    let currentFile = null;
-
-    analyticsFileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            currentFile = this.files[0];
-            analyticsFileName.textContent = currentFile.name;
-            analyticsUploadBtn.disabled = false;
-        } else {
-            currentFile = null;
-            analyticsFileName.textContent = 'файл не выбран';
-            analyticsUploadBtn.disabled = true;
-        }
-    });
-
-    analyticsUploadBtn.addEventListener('click', async function() {
-        if (!currentFile) { alert('Выберите PDF.'); return; }
-        addMessage('analytics', 'analytics-messages', 'user', `📄 Загружен файл: ${currentFile.name}`);
-        const loadingMsg = '⏳ Анализирую PDF...';
-        addMessage('analytics', 'analytics-messages', 'ai', loadingMsg);
-        this.disabled = true;
-        try {
-            const arrayBuffer = await currentFile.arrayBuffer();
-            const pdfjsLib = window.pdfjsLib;
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-            const pdf = await loadingTask.promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-            }
-            if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
-            const prompt = `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
-            const analysis = await callDeepSeek(prompt, "Ты — аналитик данных. Отвечай на русском. Используй таблицы для частотности и процентов.");
-            const history = getChatHistory('analytics');
-            if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                history.pop();
-                saveChatHistory('analytics', history);
-            }
-            addMessage('analytics', 'analytics-messages', 'ai', analysis, 'Анализ PDF-файла с отзывами');
-        } catch (err) {
-            const history = getChatHistory('analytics');
-            if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                history.pop();
-                saveChatHistory('analytics', history);
-            }
-            addMessage('analytics', 'analytics-messages', 'ai', `❌ Ошибка: ${err.message}`);
-        } finally {
-            this.disabled = false;
-            currentFile = null;
-            analyticsFileName.textContent = 'файл не выбран';
-            analyticsFileInput.value = '';
-        }
-    });
-
-    analyticsSend.addEventListener('click', function() {
-        const text = analyticsInput.value.trim();
-        if (!text) return;
-        sendChatMessage('analytics', 'analytics-input', 'analytics-send', 'analytics-messages', null, "Ты — аналитик данных. Отвечай структурированно, используй таблицы для данных.", 'Данные из отзывов Wildberries');
-    });
-    analyticsInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); analyticsSend.click(); }
-    });
-
-    // Остальные 11 чатов — через initChat
-    initChat('improve', 'improve-input', 'improve-send', 'improve-messages',
-        '👋 Опишите свой товар или проблему с карточкой, и я составлю чек-лист из 5 конкретных шагов по улучшению карточки: текст, фото, цена, состав, работа с отзывами.',
-        (text) => `Составь чек-лист из 5 рекомендаций по улучшению карточки на основе: ${text}. Используй таблицы для сравнения.`,
-        "Ты — эксперт по маркетплейсам.",
-        'Рекомендации на основе анализа карточки'
-    );
-
-    initChat('teach', 'teach-input', 'teach-send', 'teach-messages',
-        '👋 Отвечайте на мои вопросы о товаре, цене, конкурентах и уникальности — я дам персонализированные стратегии, как продавать дороже.',
-        (text) => `Ответь на вопрос или дай стратегии продажи дороже для: ${text}. Используй таблицы для сравнения стратегий.`,
-        "Ты — эксперт по маркетплейсам.",
-        'Стратегии на основе лучших практик'
-    );
-
-    initChat('competitors', 'competitors-input', 'competitors-send', 'competitors-messages',
-        '👋 Введите артикулы конкурентов через запятую (например: 157065568, 157065569), и я сравню цены, рейтинги, отзывы и покажу их слабые места в таблице.',
-        (text) => `Проанализируй конкурентов по артикулам: ${text}. Сравни цены, рейтинги, отзывы. Используй таблицу.`,
-        "Ты — аналитик данных.",
-        'Данные с Wildberries'
-    );
-
-    initChat('replies', 'replies-input', 'replies-send', 'replies-messages',
-        '👋 Вставьте негативный или нейтральный отзыв, и я сгенерирую 3 варианта ответа: вежливый, официальный, дружелюбный — в виде таблицы.',
-        (text) => `Напиши 3 варианта ответа на отзыв: ${text}. Представь в виде таблицы: стиль, текст.`,
-        "Ты — специалист по работе с клиентами.",
-        'Шаблоны ответов на основе опыта'
-    );
-
-    // Юнит (без AI)
-    const unitSend = document.getElementById('unit-send');
-    const unitInput = document.getElementById('unit-input');
-    unitSend.addEventListener('click', function() {
-        const text = unitInput.value.trim();
-        if (!text) return;
-        const parts = text.split(',').map(x => parseFloat(x.trim()));
-        if (parts.length !== 5 || parts.some(isNaN)) {
-            addMessage('unit', 'unit-messages', 'ai', '❌ Введите 5 чисел через запятую: цена, себестоимость, логистика, комиссия, реклама.');
+    authForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const login = document.getElementById('authLogin').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        if (!login || !password) { alert('Заполните все поля.'); return; }
+        const users = getUsers();
+        if (authMode === 'register') {
+            if (users[login]) { alert('Пользователь с таким логином уже существует.'); return; }
+            users[login] = { password, registered: Date.now(), requests: 0 };
+            saveUsers(users);
+            alert('Регистрация успешна! Теперь войдите.');
+            openAuthModal('login');
             return;
-        }
-        addMessage('unit', 'unit-messages', 'user', text);
-        const [price, cost, logistics, commission, ad] = parts;
-        const margin = price - cost - logistics - commission - ad;
-        const marginPct = (margin / price) * 100;
-        const table = `
-| Показатель | Значение |
-|------------|----------|
-| Цена | ${price} ₽ |
-| Себестоимость | ${cost} ₽ |
-| Логистика | ${logistics} ₽ |
-| Комиссия | ${commission} ₽ |
-| Реклама | ${ad} ₽ |
-| **Прибыль** | **${margin.toFixed(2)} ₽** |
-| **Маржинальность** | **${marginPct.toFixed(1)}%** |
-`;
-        addMessage('unit', 'unit-messages', 'ai', table, 'Расчёт на основе введённых данных');
-        unitInput.value = '';
-    });
-    unitInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); unitSend.click(); }
-    });
-    // Приветствие для юнита
-    (function() {
-        const history = getChatHistory('unit');
-        if (history.length === 0) {
-            addMessage('unit', 'unit-messages', 'ai', '👋 Введите 5 чисел через запятую: цена продажи, себестоимость, логистика, комиссия, реклама. Я мгновенно рассчитаю прибыль и маржинальность (без AI).');
-        }
-    })();
-
-    // Остальные чаты
-    initChat('marketing', 'marketing-input', 'marketing-send', 'marketing-messages',
-        '👋 Опишите товар в 2-3 словах (например: "кокосовые сливки натуральные"), и я предложу 5 идей для продвижения: акции, рекламные кампании, кросс-продажи.',
-        (text) => `Для товара "${text}" предложи 5 идей продвижения. Используй таблицу: идея, описание, бюджет.`,
-        "Ты — маркетолог.",
-        'Маркетинговые стратегии'
-    );
-
-    initChat('stock', 'stock-input', 'stock-send', 'stock-messages',
-        '👋 Введите артикул товара, и я спрогнозирую спрос по сезонности и отзывам, дам рекомендации по закупкам помесячно.',
-        (text) => `Спрогнозируй спрос на товар ${text}. Дай рекомендации по закупкам в виде таблицы: месяц, прогноз, рекомендация.`,
-        "Ты — логист.",
-        'Прогноз на основе данных Wildberries'
-    );
-
-    initChat('naming', 'naming-input', 'naming-send', 'naming-messages',
-        '👋 Опишите товар (категория, преимущества), и я сгенерирую 10 вариантов названий, 5 слоганов и 3 УТП в таблицах.',
-        (text) => `Для товара "${text}" предложи 10 названий, 5 слоганов и 3 УТП. Используй таблицы для группировки.`,
-        "Ты — копирайтер.",
-        'Креативные идеи'
-    );
-
-    // Поиск ниш (с парсингом WB)
-    const nicheInput = document.getElementById('niche-input');
-    const nicheSend = document.getElementById('niche-send');
-    const nicheMessagesId = 'niche-messages';
-
-    async function fetchWildberriesData(query) {
-        try {
-            const url = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
-            const resp = await fetch(url);
-            if (!resp.ok) throw new Error('Ошибка API Wildberries');
-            const data = await resp.json();
-            const products = data.data?.products || [];
-            const results = products.slice(0, 20).map(p => ({
-                name: p.name || '',
-                price: p.sizes?.[0]?.price?.product / 100 || 0,
-                rating: p.rating || 0,
-                feedbacks: p.feedbacks || 0,
-                brand: p.brand || '',
-                seller: p.supplier || ''
-            }));
-            return results;
-        } catch (e) {
-            console.error('Ошибка сбора данных WB:', e);
-            return null;
-        }
-    }
-
-    nicheSend.addEventListener('click', async function() {
-        const text = nicheInput.value.trim();
-        if (!text) return;
-        nicheSend.disabled = true;
-        nicheInput.disabled = true;
-
-        addMessage('niche', nicheMessagesId, 'user', text);
-        nicheInput.value = '';
-
-        // Индикатор
-        const typingId = 'typing_' + Date.now();
-        const history = getChatHistory('niche');
-        history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
-        saveChatHistory('niche', history);
-        renderMessages('niche', nicheMessagesId);
-
-        try {
-            let searchQuery = text;
-            const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
-            let words = text.split(/\s+/);
-            let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
-            if (filtered.length > 0) {
-                searchQuery = filtered.join(' ');
-            }
-
-            const rawData = await fetchWildberriesData(searchQuery);
-            if (!rawData || rawData.length === 0) {
-                const newHistory = getChatHistory('niche');
-                const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                saveChatHistory('niche', filtered2);
-                renderMessages('niche', nicheMessagesId);
-                addMessage('niche', nicheMessagesId, 'ai',
-                    `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"\n\nПосле этого я проанализирую данные и дам рекомендации по нише.`,
-                    'Данные с Wildberries'
-                );
+        } else {
+            if (!users[login] || users[login].password !== password) {
+                alert('Неверный логин или пароль.');
                 return;
             }
-
-            const dataStr = JSON.stringify(rawData.slice(0, 15), null, 2);
-            const prompt = `Пользователь ищет нишу: "${text}".
-            Вот данные с Wildberries по запросу (первые 15 товаров):
-            ${dataStr}
-
-            Проанализируй эти данные и дай рекомендацию:
-            1. Топ-3 ниши (или категории) на основе этих данных.
-            2. Для каждой ниши укажи: среднюю цену, конкуренцию (оцени по количеству продавцов и отзывов), потенциал маржинальности (оцени).
-            3. Дай краткие рекомендации, стоит ли входить в эту нишу и с чего начать.
-            4. Если данных недостаточно, укажи, какие ещё данные нужны.
-
-            Ответ структурируй: заголовки ###, списки, таблицы.`;
-
-            const aiResponse = await callDeepSeek(prompt, "Ты — эксперт по маркетплейсам и поиску ниш.");
-            const newHistory = getChatHistory('niche');
-            const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-            saveChatHistory('niche', filtered2);
-            renderMessages('niche', nicheMessagesId);
-            addMessage('niche', nicheMessagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
-        } catch (err) {
-            const newHistory = getChatHistory('niche');
-            const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-            saveChatHistory('niche', filtered2);
-            renderMessages('niche', nicheMessagesId);
-            addMessage('niche', nicheMessagesId, 'ai', `❌ Ошибка: ${err.message}`);
-        } finally {
-            nicheSend.disabled = false;
-            nicheInput.disabled = false;
-            nicheInput.focus();
+            currentUser = login;
+            setSession(login);
+            modal.classList.remove('active');
+            renderAuthBar();
+            // Обновляем текущий чат
+            const active = document.querySelector('.sidebar-item.active');
+            if (active) switchChat(active.dataset.tab);
         }
     });
 
-    nicheInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            nicheSend.click();
-        }
-    });
-
-    // Приветствие для ниши
-    (function() {
-        const history = getChatHistory('niche');
-        if (history.length === 0) {
-            addMessage('niche', 'niche-messages', 'ai',
-                '👋 Напишите, что вы ищете: "найди нишу до 1000 ₽ с маржой >30%" или "проанализируй нишу кокосовые сливки".\nЯ соберу данные с Wildberries и дам рекомендации.',
-                'Данные с Wildberries'
-            );
-        }
-    })();
-
-    // Упаковка и поставщики
-    initChat('packaging', 'packaging-input', 'packaging-send', 'packaging-messages',
-        '👋 Спросите про упаковку: как правильно упаковать хрупкий товар, требования WB, какие материалы выбрать, ошибки и штрафы.',
-        (text) => `Ответь на вопрос об упаковке товара для Wildberries: ${text}. Дай рекомендации по материалам, требованиям площадки, типичным ошибкам. Если есть конкретный товар, учти его хрупкость и габариты.`,
-        "Ты — эксперт по упаковке для маркетплейсов. Знаешь требования Wildberries к упаковке (габариты, вес, маркировка, амортизация). Даёшь практические советы.",
-        'Рекомендации на основе требований WB'
-    );
-
-    initChat('suppliers', 'suppliers-input', 'suppliers-send', 'suppliers-messages',
-        '👋 Спросите про поставщиков: где выгодно закупать товары и упаковку, как проверять надёжность, где искать оптовых поставщиков в России и Китае.',
-        (text) => `Ответь на вопрос о поиске поставщиков для Wildberries: ${text}. Подскажи, где искать (каналы, платформы), дай чек-лист проверки надёжности, расскажи про нюансы импорта и оптовых закупок.`,
-        "Ты — эксперт по закупкам для маркетплейсов. Знаешь каналы поиска поставщиков (B2B-каталоги, Wildberries для бизнеса, выставки, Китай). Советуешь как минимизировать риски.",
-        'Советы по поиску поставщиков'
-    );
-
-    // ---------- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (12) ----------
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = {
-        analytics: document.getElementById('analytics'),
-        improve: document.getElementById('improve'),
-        teach: document.getElementById('teach'),
-        competitors: document.getElementById('competitors'),
-        replies: document.getElementById('replies'),
-        unit: document.getElementById('unit'),
-        marketing: document.getElementById('marketing'),
-        stock: document.getElementById('stock'),
-        naming: document.getElementById('naming'),
-        niche: document.getElementById('niche'),
-        packaging: document.getElementById('packaging'),
-        suppliers: document.getElementById('suppliers')
-    };
-
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
+    // ---------- ЗАПУСК ----------
+    // Обработчики кликов по элементам сайдбара
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', function() {
             const tab = this.dataset.tab;
-            Object.keys(tabContents).forEach(key => {
-                tabContents[key].classList.toggle('active', key === tab);
-            });
-            loadChatHistory(tab);
+            if (tab) switchChat(tab);
         });
     });
 
-    // ---------- СТАРТ ----------
+    // Загружаем активный чат (по умолчанию analytics)
     renderAuthBar();
-    const activeTab = document.querySelector('.tab-btn.active');
-    if (activeTab) {
-        loadChatHistory(activeTab.dataset.tab);
-    }
+    switchChat('analytics');
 
 })();
 </script>
