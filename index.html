@@ -92,7 +92,6 @@
         .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-outline:hover { background: #e2e8f0; }
 
-        /* Админ-панель */
         .admin-panel { display: none; margin: 20px 0; padding: 20px; background: #f1f5f9; border-radius: 12px; border: 1px solid #cbd5e1; }
         .admin-panel h3 { margin-bottom: 12px; }
         .admin-panel .promo-input-group { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
@@ -103,7 +102,6 @@
 
         .promo-status { margin-top: 10px; font-size: 14px; }
 
-        /* Профиль */
         .profile-form { max-width: 400px; }
         .profile-form .field { margin-bottom: 16px; }
         .profile-form .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
@@ -114,7 +112,6 @@
         .profile-form .status.success { color: #16a34a; }
         .profile-form .status.error { color: #dc2626; }
 
-        /* Тарифы */
         .tariffs-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
         .tariffs-table th { background: #2563eb; color: white; padding: 10px 12px; text-align: left; }
         .tariffs-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
@@ -123,6 +120,11 @@
         .payment-info { background: #f1f5f9; padding: 16px 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #2563eb; }
         .payment-info p { margin: 6px 0; }
         .payment-info .label { font-weight: 600; color: #1e293b; }
+
+        .article-input-area { margin: 12px 0; padding: 12px 16px; background: #f1f5f9; border-radius: 12px; }
+        .article-input-area .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .article-input-area .row input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 150px; }
+        .article-input-area .status { font-size: 13px; color: #64748b; margin-top: 6px; }
 
         @media (max-width: 700px) {
             .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
@@ -163,12 +165,10 @@
             <div class="sidebar-item" data-tab="profile"><span class="icon">👤</span> Профиль</div>
         </div>
 
-        <div class="chat-panel" id="chatPanel">
-            <!-- динамическая загрузка -->
-        </div>
+        <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.9</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -209,7 +209,9 @@
 
     const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
 
-    // ---------- ПОЛЬЗОВАТЕЛЬ ----------
+    // ============================================
+    // ПОЛЬЗОВАТЕЛЬ
+    // ============================================
     const USERS_KEY = 'wb_users';
     const SESSION_KEY = 'wb_session';
 
@@ -234,7 +236,9 @@
         }
     }
 
-    // ---------- ПРОМОКОДЫ ----------
+    // ============================================
+    // ПРОМОКОДЫ
+    // ============================================
     function getPromoCodes() {
         try { return JSON.parse(localStorage.getItem('promoCodes')) || []; } catch { return []; }
     }
@@ -265,7 +269,9 @@
         };
     }
 
-    // ---------- СЧЁТЧИК ЗАПРОСОВ (5 в месяц) ----------
+    // ============================================
+    // СЧЁТЧИК ЗАПРОСОВ (5 в месяц)
+    // ============================================
     function getMonthlyRequestsKey() {
         const now = new Date();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -290,7 +296,9 @@
         return count < 5;
     }
 
-    // ---------- АДМИН-ПАНЕЛЬ ----------
+    // ============================================
+    // АДМИН-ПАНЕЛЬ
+    // ============================================
     const ADMIN_PASSWORD = 'wbadmin2025';
     const urlParams = new URLSearchParams(window.location.search);
     let adminMode = false;
@@ -303,7 +311,9 @@
         }
     }
 
-    // ---------- ХРАНЕНИЕ ИСТОРИИ ЧАТОВ ----------
+    // ============================================
+    // ХРАНЕНИЕ ИСТОРИИ ЧАТОВ
+    // ============================================
     function getHistoryKey(tabName) {
         return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
     }
@@ -315,9 +325,11 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    // ---------- КОНФИГ ЧАТОВ ----------
+    // ============================================
+    // КОНФИГ ЧАТОВ
+    // ============================================
     const chatConfig = {
-        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или задайте вопрос по анализу отзывов.' },
+        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или введите артикул для анализа.' },
         improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
         teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
         competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Введите артикулы конкурентов через запятую.' },
@@ -331,7 +343,9 @@
         suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
     };
 
-    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ ----------
+    // ============================================
+    // ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ
+    // ============================================
     function renderMessages(tabName, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -384,7 +398,9 @@
         addMessage(tabName, containerId, 'ai', welcome);
     }
 
-    // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
+    // ============================================
+    // ОТРИСОВКА АКТИВНОГО ЧАТА
+    // ============================================
     function renderChatPanel(tabName) {
         if (tabName === 'profile') {
             renderProfile();
@@ -410,6 +426,7 @@
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
 
+        // Особый блок для аналитики (PDF + артикул)
         if (tabName === 'analytics') {
             html += `
                 <div class="file-upload-area">
@@ -417,6 +434,13 @@
                     <input type="file" id="analytics-file" accept=".pdf">
                     <span class="file-name" id="analytics-file-name">файл не выбран</span>
                     <button class="btn" id="analytics-upload-btn" disabled>Анализировать PDF</button>
+                </div>
+                <div class="article-input-area">
+                    <div class="row">
+                        <input type="text" id="articleInput" placeholder="Введите артикул Wildberries (например: 61472739)">
+                        <button class="btn" id="articleAnalyzeBtn">Анализировать по артикулу</button>
+                    </div>
+                    <div class="status" id="articleStatus"></div>
                 </div>
             `;
         }
@@ -453,7 +477,9 @@
         initChat(tabName);
     }
 
-    // ---------- ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА ----------
+    // ============================================
+    // ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА
+    // ============================================
     function initChat(tabName) {
         const input = document.getElementById(`${tabName}-input`);
         const sendBtn = document.getElementById(`${tabName}-send`);
@@ -505,8 +531,11 @@
             }
         });
 
-        // Спец. обработка аналитики (PDF)
+        // ============================
+        // ОСОБАЯ ЛОГИКА ДЛЯ АНАЛИТИКИ (PDF + артикул)
+        // ============================
         if (tabName === 'analytics') {
+            // --- PDF ---
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
             const fileName = document.getElementById('analytics-file-name');
@@ -565,9 +594,98 @@
                     fileInput.value = '';
                 }
             });
+
+            // --- АРТИКУЛ (публичное API) ---
+            const articleInput = document.getElementById('articleInput');
+            const articleBtn = document.getElementById('articleAnalyzeBtn');
+            const articleStatus = document.getElementById('articleStatus');
+
+            async function analyzeByArticle(article) {
+                articleStatus.textContent = '⏳ Получаю данные...';
+                articleStatus.style.color = '#2563eb';
+                try {
+                    const detailUrl = `https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`;
+                    const detailResp = await fetch(detailUrl);
+                    if (!detailResp.ok) throw new Error('Не удалось получить данные по товару');
+                    const detailData = await detailResp.json();
+                    const product = detailData.data?.products?.[0];
+                    if (!product) throw new Error('Товар с таким артикулом не найден.');
+
+                    const nameParts = product.name.split('/');
+                    const searchQuery = nameParts[0]?.trim() || product.name;
+                    const searchUrl = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&page=1`;
+                    const searchResp = await fetch(searchUrl);
+                    if (!searchResp.ok) throw new Error('Не удалось найти конкурентов');
+                    const searchData = await searchResp.json();
+                    const competitors = (searchData.data?.products || [])
+                        .filter(p => p.id !== parseInt(article))
+                        .slice(0, 5)
+                        .map(p => ({
+                            id: p.id,
+                            name: p.name || '',
+                            price: p.sizes?.[0]?.price?.product / 100 || 0,
+                            rating: p.rating || 0,
+                            feedbacks: p.feedbacks || 0,
+                            seller: p.supplier || ''
+                        }));
+
+                    const productData = {
+                        id: product.id,
+                        name: product.name,
+                        price: product.sizes?.[0]?.price?.product / 100 || 0,
+                        rating: product.rating || 0,
+                        feedbacks: product.feedbacks || 0,
+                        brand: product.brand || '',
+                        seller: product.supplier || ''
+                    };
+
+                    let msg = `📊 *Анализ товара (арт. ${productData.id})*\n\n`;
+                    msg += `📦 *Название:* ${productData.name}\n`;
+                    msg += `💰 *Цена:* ${productData.price} ₽\n`;
+                    msg += `⭐ *Рейтинг:* ${productData.rating}\n`;
+                    msg += `💬 *Отзывов:* ${productData.feedbacks}\n`;
+                    if (productData.brand) msg += `🏷️ *Бренд:* ${productData.brand}\n`;
+                    if (productData.seller) msg += `🏢 *Продавец:* ${productData.seller}\n\n`;
+
+                    if (competitors.length > 0) {
+                        msg += '🏆 *Конкуренты (топ-5):*\n';
+                        competitors.forEach((c, i) => {
+                            msg += `${i+1}. ${c.name.slice(0, 40)}... — ${c.price} ₽ (⭐${c.rating}, ${c.feedbacks} отзывов)\n`;
+                        });
+                    } else {
+                        msg += '🤷 Конкуренты не найдены.';
+                    }
+
+                    articleStatus.textContent = '✅ Анализ завершён!';
+                    articleStatus.style.color = '#16a34a';
+                    return msg;
+                } catch (error) {
+                    articleStatus.textContent = `❌ Ошибка: ${error.message}`;
+                    articleStatus.style.color = '#dc2626';
+                    return null;
+                }
+            }
+
+            articleBtn.addEventListener('click', async function() {
+                const article = articleInput.value.trim();
+                if (!article) { alert('Введите артикул товара.'); return; }
+                if (!/^\d+$/.test(article)) { alert('Артикул должен состоять только из цифр.'); return; }
+                const result = await analyzeByArticle(article);
+                if (result) {
+                    addMessage(tabName, messagesId, 'user', `🔍 Анализ артикула: ${article}`);
+                    addMessage(tabName, messagesId, 'ai', result);
+                    articleInput.value = '';
+                }
+            });
+
+            articleInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); articleBtn.click(); }
+            });
         }
 
-        // Спец. обработка юнит-экономики (без AI)
+        // ============================
+        // ОСОБАЯ ЛОГИКА ДЛЯ ЮНИТ-ЭКОНОМИКИ (без AI)
+        // ============================
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -602,7 +720,9 @@
             });
         }
 
-        // Спец. обработка поиска ниш (парсинг WB)
+        // ============================
+        // ОСОБАЯ ЛОГИКА ДЛЯ ПОИСКА НИШ (парсинг WB)
+        // ============================
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
@@ -704,7 +824,9 @@
         }
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО ИСТОРИИ ----------
+    // ============================================
+    // МОДАЛЬНОЕ ОКНО ИСТОРИИ
+    // ============================================
     function showHistoryModal(tabName) {
         const modal = document.getElementById('historyModal');
         const listContainer = document.getElementById('historyList');
@@ -820,7 +942,9 @@
         searchInput.focus();
     }
 
-    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ ----------
+    // ============================================
+    // ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ
+    // ============================================
     async function sendChatMessage(tabName) {
         const input = document.getElementById(`${tabName}-input`);
         const sendBtn = document.getElementById(`${tabName}-send`);
@@ -828,7 +952,6 @@
         const text = input.value.trim();
         if (!text) return;
 
-        // Проверка доступа (промокод или лимит 5 запросов в месяц)
         if (!canMakeRequest()) {
             alert('🔒 Достигнут лимит бесплатных запросов (5 в месяц). Введите промокод для снятия ограничений или приобретите тариф.');
             return;
@@ -898,7 +1021,9 @@
         }
     }
 
-    // ---------- AI ВЫЗОВ ----------
+    // ============================================
+    // AI ВЫЗОВ
+    // ============================================
     async function callDeepSeek(prompt, systemPrompt) {
         const url = "https://api.aitunnel.ru/v1/chat/completions";
         const headers = { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" };
@@ -917,7 +1042,9 @@
         return data.choices[0].message.content;
     }
 
-    // ---------- ФОРМАТИРОВАНИЕ ОТВЕТА ----------
+    // ============================================
+    // ФОРМАТИРОВАНИЕ ОТВЕТА
+    // ============================================
     function convertMarkdownTables(text) {
         const lines = text.split('\n');
         let result = [], i = 0;
@@ -987,7 +1114,9 @@
         return html;
     }
 
-    // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
+    // ============================================
+    // ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ
+    // ============================================
     function switchChat(tabName) {
         document.querySelectorAll('.sidebar-item').forEach(el => {
             el.classList.toggle('active', el.dataset.tab === tabName);
@@ -995,7 +1124,9 @@
         renderChatPanel(tabName);
     }
 
-    // ---------- ПРОФИЛЬ ----------
+    // ============================================
+    // ПРОФИЛЬ
+    // ============================================
     function renderProfile() {
         const panel = document.getElementById('chatPanel');
         if (!currentUser) {
@@ -1137,7 +1268,9 @@
         });
     }
 
-    // ---------- ТАРИФЫ (с реальными реквизитами) ----------
+    // ============================================
+    // ТАРИФЫ
+    // ============================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
         let html = `
@@ -1186,10 +1319,10 @@
 
                 <div class="payment-info">
                     <h4 style="margin-bottom: 8px;">💳 Как оплатить</h4>
-                    <p><span class="label">СБП (Система быстрых платежей):</span> перевод на номер телефона <strong>+7 902 881 99 31</strong> (получатель: Соловьев Георгий Сергеевич).</p>
+                    <p><span class="label">СБП:</span> перевод на номер телефона <strong>+7 902 881 97 11</strong> (получатель: Соловьева Евгения Ивановна).</p>
                     <p><span class="label">Банковская карта:</span> <strong>2202 2092 3186 1286</strong> (Сбербанк).</p>
-                    <p><span class="label">Комментарий к переводу:</span> укажите ваш <strong>логин</strong> (его можно увидеть в профиле) и желаемый тариф (Старт, Про или Бизнес).</p>
-                    <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите нам в поддержку ВК с подтверждением перевода, и мы активируем тариф в течение 24 часов.</p>
+                    <p><span class="label">Комментарий к переводу:</span> укажите ваш <strong>логин</strong> и желаемый тариф (Старт, Про или Бизнес).</p>
+                    <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите нам на почту <strong>wbanalytics5@gmail.com</strong> с подтверждением, и мы активируем тариф в течение 24 часов.</p>
                 </div>
 
                 <div style="margin: 20px 0;">
@@ -1203,12 +1336,14 @@
 
         document.getElementById('tariffPayBtn').addEventListener('click', function() {
             const status = document.getElementById('tariffPayStatus');
-            status.textContent = '💳 Для оплаты переведите деньги по указанным реквизитам. После перевода напишите нам в ВК с подтверждением.';
+            status.textContent = '💳 Для оплаты переведите деньги по указанным реквизитам. После перевода напишите на wbanalytics5@gmail.com.';
             status.style.color = '#2563eb';
         });
     }
 
-    // ---------- ПРОФИЛЬ (отображение в шапке) ----------
+    // ============================================
+    // ПРОФИЛЬ (отображение в шапке)
+    // ============================================
     function renderAuthBar() {
         const bar = document.getElementById('authBar');
         if (currentUser) {
@@ -1239,7 +1374,9 @@
         }
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ----------
+    // ============================================
+    // МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ
+    // ============================================
     const modal = document.getElementById('authModal');
     const modalTitle = document.getElementById('authModalTitle');
     const authForm = document.getElementById('authForm');
@@ -1300,7 +1437,9 @@
         }
     });
 
-    // ---------- АДМИН-ПАНЕЛЬ ----------
+    // ============================================
+    // АДМИН-ПАНЕЛЬ
+    // ============================================
     if (adminMode) {
         const panel = document.createElement('div');
         panel.className = 'admin-panel';
@@ -1312,7 +1451,7 @@
                 <button class="btn" id="addPromoBtn">➕ Добавить</button>
             </div>
             <div class="promo-list" id="promoList"></div>
-            <p style="font-size:12px; color:#64748b; margin-top:10px;">Промокоды хранятся в localStorage. Для постоянного хранения нужна база данных.</p>
+            <p style="font-size:12px; color:#64748b; margin-top:10px;">Промокоды хранятся в localStorage.</p>
         `;
         const chatPanel = document.getElementById('chatPanel');
         chatPanel.parentNode.insertBefore(panel, chatPanel);
@@ -1359,7 +1498,9 @@
         renderPromoList();
     }
 
-    // ---------- ЗАПУСК ----------
+    // ============================================
+    // ЗАПУСК
+    // ============================================
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.addEventListener('click', function() {
             const tab = this.dataset.tab;
