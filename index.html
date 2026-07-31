@@ -12,7 +12,6 @@
         h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
         h1 span { color: #2563eb; }
         .subtitle { color: #64748b; font-size: 14px; }
-
         .auth-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .auth-bar .user-name { font-weight: 600; color: #2563eb; }
         .auth-bar .btn-outline { background: transparent; border: 1px solid #2563eb; color: #2563eb; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; }
@@ -80,13 +79,16 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
         .modal.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 400px; width: 90%; box-shadow: 0 12px 48px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 48px rgba(0,0,0,0.2); }
         .modal-content h2 { margin-bottom: 16px; }
-        .modal-content label { display: block; margin: 12px 0 4px; font-weight: 600; }
-        .modal-content input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; }
-        .modal-content .btn { margin-top: 16px; width: 100%; }
-        .modal-content .switch-link { margin-top: 12px; text-align: center; font-size: 14px; }
-        .modal-content .switch-link a { color: #2563eb; cursor: pointer; }
+        .modal-content input[type="text"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; margin-bottom: 12px; }
+        .modal-content .history-item { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .modal-content .history-item:hover { background: #f1f5f9; }
+        .modal-content .history-item .date { font-size: 13px; color: #64748b; }
+        .modal-content .history-item .title { font-size: 14px; color: #1e293b; font-weight: 500; }
+        .modal-content .history-item .date { white-space: nowrap; margin-left: 10px; }
+        .modal-content .group-header { font-weight: 600; color: #2563eb; margin: 12px 0 6px 0; font-size: 14px; }
+
         .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
         .btn-outline:hover { background: #e2e8f0; }
 
@@ -131,10 +133,10 @@
         </div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.1</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 9.2</div>
 </div>
 
-<!-- Модальное окно -->
+<!-- Модальное окно для регистрации -->
 <div class="modal" id="authModal">
     <div class="modal-content">
         <h2 id="authModalTitle">Вход</h2>
@@ -150,6 +152,18 @@
         </div>
         <div style="margin-top:10px; text-align:center;">
             <button class="btn-outline" id="authCloseBtn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для истории (динамическое) -->
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <h2>📂 История чата</h2>
+        <input type="text" id="historySearch" placeholder="🔍 Поиск по диалогам...">
+        <div id="historyList"></div>
+        <div style="margin-top:16px; text-align:center;">
+            <button class="btn-outline" id="historyCloseBtn">Закрыть</button>
         </div>
     </div>
 </div>
@@ -369,35 +383,7 @@
         const historyBtn = document.getElementById(`history-${tabName}`);
         if (historyBtn) {
             historyBtn.addEventListener('click', function() {
-                const archives = [];
-                for (let key in localStorage) {
-                    if (key.startsWith(`archive_${tabName}_`)) {
-                        const timestamp = key.split('_')[2];
-                        const date = new Date(parseInt(timestamp)).toLocaleString();
-                        archives.push({ key, date });
-                    }
-                }
-                if (archives.length === 0) {
-                    alert('📭 Нет сохранённых архивов для этого чата.');
-                    return;
-                }
-                let msg = `📂 Архивы чата "${chatConfig[tabName].name}":\n\n`;
-                archives.forEach((a, i) => {
-                    msg += `${i+1}. ${a.date}\n`;
-                });
-                msg += '\nВведите номер для загрузки (0 - отмена):';
-                const choice = prompt(msg);
-                if (choice === null || choice === '0') return;
-                const idx = parseInt(choice) - 1;
-                if (idx >= 0 && idx < archives.length) {
-                    const selected = archives[idx];
-                    const archivedHistory = JSON.parse(localStorage.getItem(selected.key));
-                    // Заменяем текущую историю на архивную
-                    saveChatHistory(tabName, archivedHistory);
-                    renderMessages(tabName, messagesId);
-                } else {
-                    alert('Неверный номер.');
-                }
+                showHistoryModal(tabName);
             });
         }
 
@@ -412,7 +398,7 @@
             }
         });
 
-        // Специальная обработка для аналитики (PDF) — уже есть в renderChatPanel
+        // Специальная обработка для аналитики (PDF)
         if (tabName === 'analytics') {
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
@@ -615,6 +601,151 @@
         }
     }
 
+    // ---------- МОДАЛЬНОЕ ОКНО ИСТОРИИ ----------
+    function showHistoryModal(tabName) {
+        const modal = document.getElementById('historyModal');
+        const listContainer = document.getElementById('historyList');
+        const searchInput = document.getElementById('historySearch');
+        const closeBtn = document.getElementById('historyCloseBtn');
+
+        // Собираем архивы для этого чата
+        const archives = [];
+        for (let key in localStorage) {
+            if (key.startsWith(`archive_${tabName}_`)) {
+                const timestamp = key.split('_')[2];
+                const date = new Date(parseInt(timestamp));
+                const history = JSON.parse(localStorage.getItem(key));
+                // Извлекаем название диалога: первое сообщение пользователя или AI
+                let title = 'Диалог';
+                for (let msg of history) {
+                    if (msg.role === 'user' || msg.role === 'ai') {
+                        const text = msg.content.replace(/\n/g, ' ').trim();
+                        if (text.length > 10) {
+                            title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+                            break;
+                        }
+                    }
+                }
+                archives.push({
+                    key: key,
+                    date: date,
+                    title: title,
+                    history: history,
+                    timestamp: parseInt(timestamp)
+                });
+            }
+        }
+
+        if (archives.length === 0) {
+            listContainer.innerHTML = '<p style="color:#64748b;">📭 Нет сохранённых архивов для этого чата.</p>';
+            modal.classList.add('active');
+            searchInput.value = '';
+            return;
+        }
+
+        // Сортируем по дате (сначала новые)
+        archives.sort((a, b) => b.timestamp - a.timestamp);
+
+        // Группировка по дням
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - 7);
+
+        const groups = {
+            'Сегодня': [],
+            'Вчера': [],
+            'На этой неделе': [],
+            'Ранее': []
+        };
+
+        archives.forEach(arch => {
+            const d = arch.date;
+            const dateOnly = new Date(d);
+            dateOnly.setHours(0,0,0,0);
+            if (dateOnly.getTime() === today.getTime()) {
+                groups['Сегодня'].push(arch);
+            } else if (dateOnly.getTime() === yesterday.getTime()) {
+                groups['Вчера'].push(arch);
+            } else if (dateOnly.getTime() >= weekStart.getTime()) {
+                groups['На этой неделе'].push(arch);
+            } else {
+                groups['Ранее'].push(arch);
+            }
+        });
+
+        // Функция рендеринга списка с учётом поиска
+        function renderList(filterText = '') {
+            const filter = filterText.toLowerCase().trim();
+            let html = '';
+            for (let group in groups) {
+                const items = groups[group].filter(arch => {
+                    if (!filter) return true;
+                    return arch.title.toLowerCase().includes(filter) ||
+                           arch.history.some(msg => msg.content.toLowerCase().includes(filter));
+                });
+                if (items.length === 0) continue;
+                html += `<div class="group-header">${group}</div>`;
+                items.forEach(arch => {
+                    const dateStr = arch.date.toLocaleString('ru-RU', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    html += `
+                        <div class="history-item" data-key="${arch.key}">
+                            <span class="title">${arch.title}</span>
+                            <span class="date">${dateStr}</span>
+                        </div>
+                    `;
+                });
+            }
+            if (!html) {
+                html = '<p style="color:#64748b;">🔍 Ничего не найдено.</p>';
+            }
+            listContainer.innerHTML = html;
+
+            // Обработчики кликов
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const key = this.dataset.key;
+                    const archivedHistory = JSON.parse(localStorage.getItem(key));
+                    // Заменяем текущую историю на архивную
+                    saveChatHistory(tabName, archivedHistory);
+                    const messagesId = tabName + '-messages';
+                    renderMessages(tabName, messagesId);
+                    modal.classList.remove('active');
+                });
+            });
+        }
+
+        // Первый рендеринг
+        renderList('');
+
+        // Поиск
+        searchInput.addEventListener('input', function() {
+            renderList(this.value);
+        });
+
+        // Закрытие
+        closeBtn.addEventListener('click', function() {
+            modal.classList.remove('active');
+            searchInput.value = '';
+        });
+
+        // Закрытие по клику вне окна
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                searchInput.value = '';
+            }
+        });
+
+        modal.classList.add('active');
+        searchInput.focus();
+    }
+
     // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ (с индикатором) ----------
     async function sendChatMessage(tabName) {
         const input = document.getElementById(`${tabName}-input`);
@@ -814,7 +945,7 @@
         }
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО ----------
+    // ---------- МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ ----------
     const modal = document.getElementById('authModal');
     const modalTitle = document.getElementById('authModalTitle');
     const authForm = document.getElementById('authForm');
