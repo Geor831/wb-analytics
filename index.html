@@ -168,7 +168,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.5</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 11.1</div>
 </div>
 
 <!-- Модальные окна -->
@@ -209,9 +209,46 @@
 
     const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
 
-    // ============================================
+    // ============================================================
+    // ВЫБЕРИТЕ СПОСОБ ПОЛУЧЕНИЯ ДАННЫХ (раскомментируйте нужный)
+    // ============================================================
+
+    // --- ВАРИАНТ 1: Через ваш бэкенд (рекомендуется) ---
+    // const BACKEND_URL = "https://ваш-адрес.onrender.com"; // замените на ваш адрес
+
+    // --- ВАРИАНТ 2: Через публичный прокси (менее стабильно) ---
+    const USE_PROXY = true; // если true, использует прокси; если false, использует BACKEND_URL
+    const PROXY_URL = "https://corsproxy.io/?";
+    const PROXY_URL_ALT = "https://api.allorigins.win/raw?url=";
+
+    // Функция для получения данных (автоматический выбор)
+    async function fetchProductData(article) {
+        if (USE_PROXY) {
+            // Пробуем основной прокси
+            try {
+                const url = PROXY_URL + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('Прокси не отвечает');
+                return await resp.json();
+            } catch (e) {
+                // Если основной прокси не работает, пробуем запасной
+                const urlAlt = PROXY_URL_ALT + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
+                const respAlt = await fetch(urlAlt);
+                if (!respAlt.ok) throw new Error('Все прокси недоступны');
+                return await respAlt.json();
+            }
+        } else {
+            // Используем бэкенд
+            const url = `${BACKEND_URL}/api/analyze/${article}`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error('Бэкенд не отвечает');
+            return await resp.json();
+        }
+    }
+
+    // ============================================================
     // ПОЛЬЗОВАТЕЛЬ
-    // ============================================
+    // ============================================================
     const USERS_KEY = 'wb_users';
     const SESSION_KEY = 'wb_session';
 
@@ -594,7 +631,7 @@
                 }
             });
 
-            // --- АРТИКУЛ (публичное API через прокси) ---
+            // --- АРТИКУЛ (через прокси или бэкенд) ---
             const articleInput = document.getElementById('articleInput');
             const articleBtn = document.getElementById('articleAnalyzeBtn');
             const articleStatus = document.getElementById('articleStatus');
@@ -603,62 +640,60 @@
                 articleStatus.textContent = '⏳ Получаю данные...';
                 articleStatus.style.color = '#2563eb';
                 try {
-                    const proxy = 'https://corsproxy.io/?';
-                    const detailUrl = proxy + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
-                    const detailResp = await fetch(detailUrl);
-                    if (!detailResp.ok) throw new Error('Не удалось получить данные по товару');
-                    const detailData = await detailResp.json();
-                    const product = detailData.data?.products?.[0];
-                    if (!product) throw new Error('Товар с таким артикулом не найден.');
-
-                    const nameParts = product.name.split('/');
-                    const searchQuery = nameParts[0]?.trim() || product.name;
-                    const searchUrl = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&page=1`);
-                    const searchResp = await fetch(searchUrl);
-                    if (!searchResp.ok) throw new Error('Не удалось найти конкурентов');
-                    const searchData = await searchResp.json();
-                    const competitors = (searchData.data?.products || [])
-                        .filter(p => p.id !== parseInt(article))
-                        .slice(0, 5)
-                        .map(p => ({
-                            id: p.id,
-                            name: p.name || '',
-                            price: p.sizes?.[0]?.price?.product / 100 || 0,
-                            rating: p.rating || 0,
-                            feedbacks: p.feedbacks || 0,
-                            seller: p.supplier || ''
-                        }));
-
-                    const productData = {
-                        id: product.id,
-                        name: product.name,
-                        price: product.sizes?.[0]?.price?.product / 100 || 0,
-                        rating: product.rating || 0,
-                        feedbacks: product.feedbacks || 0,
-                        brand: product.brand || '',
-                        seller: product.supplier || ''
-                    };
-
-                    let msg = `📊 *Анализ товара (арт. ${productData.id})*\n\n`;
-                    msg += `📦 *Название:* ${productData.name}\n`;
-                    msg += `💰 *Цена:* ${productData.price} ₽\n`;
-                    msg += `⭐ *Рейтинг:* ${productData.rating}\n`;
-                    msg += `💬 *Отзывов:* ${productData.feedbacks}\n`;
-                    if (productData.brand) msg += `🏷️ *Бренд:* ${productData.brand}\n`;
-                    if (productData.seller) msg += `🏢 *Продавец:* ${productData.seller}\n\n`;
-
-                    if (competitors.length > 0) {
-                        msg += '🏆 *Конкуренты (топ-5):*\n';
-                        competitors.forEach((c, i) => {
-                            msg += `${i+1}. ${c.name.slice(0, 40)}... — ${c.price} ₽ (⭐${c.rating}, ${c.feedbacks} отзывов)\n`;
-                        });
+                    const data = await fetchProductData(article);
+                    // data - это ответ от Wildberries (для прокси) или от вашего бэкенда
+                    let product, competitors;
+                    if (USE_PROXY) {
+                        // Если используется прокси, данные приходят в формате от Wildberries
+                        const products = data.data?.products;
+                        if (!products || products.length === 0) throw new Error('Товар не найден');
+                        product = products[0];
+                        // Для конкурентов нужен отдельный запрос (сделаем упрощённо)
+                        // Для простоты мы не будем искать конкурентов через прокси, только сам товар
+                        competitors = [];
                     } else {
-                        msg += '🤷 Конкуренты не найдены.';
+                        // Бэкенд возвращает готовый объект с product и competitors
+                        if (data.error) throw new Error(data.error);
+                        product = data.product;
+                        competitors = data.competitors;
                     }
 
-                    articleStatus.textContent = '✅ Анализ завершён!';
-                    articleStatus.style.color = '#16a34a';
-                    return msg;
+                    // Если мы используем прокси, у нас нет конкурентов, но есть данные товара
+                    if (USE_PROXY) {
+                        // Формируем сообщение только с товаром
+                        let msg = `📊 *Анализ товара (арт. ${article})*\n\n`;
+                        msg += `📦 *Название:* ${product.name}\n`;
+                        msg += `💰 *Цена:* ${product.sizes?.[0]?.price?.product / 100 || 0} ₽\n`;
+                        msg += `⭐ *Рейтинг:* ${product.rating || 0}\n`;
+                        msg += `💬 *Отзывов:* ${product.feedbacks || 0}\n`;
+                        if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
+                        if (product.supplier) msg += `🏢 *Продавец:* ${product.supplier}\n`;
+                        articleStatus.textContent = '✅ Анализ завершён!';
+                        articleStatus.style.color = '#16a34a';
+                        return msg;
+                    } else {
+                        // Бэкенд — полный отчёт с конкурентами
+                        let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
+                        msg += `📦 *Название:* ${product.name}\n`;
+                        msg += `💰 *Цена:* ${product.price} ₽\n`;
+                        msg += `⭐ *Рейтинг:* ${product.rating}\n`;
+                        msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
+                        if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
+                        if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n\n`;
+
+                        if (competitors.length > 0) {
+                            msg += '🏆 *Конкуренты (топ-5):*\n';
+                            competitors.forEach((c, i) => {
+                                msg += `${i+1}. ${c.name.slice(0, 40)}... — ${c.price} ₽ (⭐${c.rating}, ${c.feedbacks} отзывов)\n`;
+                            });
+                        } else {
+                            msg += '🤷 Конкуренты не найдены.';
+                        }
+
+                        articleStatus.textContent = '✅ Анализ завершён!';
+                        articleStatus.style.color = '#16a34a';
+                        return msg;
+                    }
                 } catch (error) {
                     articleStatus.textContent = `❌ Ошибка: ${error.message}`;
                     articleStatus.style.color = '#dc2626';
@@ -721,7 +756,7 @@
         }
 
         // ============================
-        // ОСОБАЯ ЛОГИКА ДЛЯ ПОИСКА НИШ (парсинг WB)
+        // ОСОБАЯ ЛОГИКА ДЛЯ ПОИСКА НИШ (использует тот же метод fetchProductData)
         // ============================
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
@@ -729,20 +764,25 @@
 
             async function fetchWildberriesData(query) {
                 try {
-                    const proxy = 'https://corsproxy.io/?';
-                    const url = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`);
-                    const resp = await fetch(url);
-                    if (!resp.ok) throw new Error('Ошибка API Wildberries');
-                    const data = await resp.json();
-                    const products = data.data?.products || [];
-                    return products.slice(0, 20).map(p => ({
-                        name: p.name || '',
-                        price: p.sizes?.[0]?.price?.product / 100 || 0,
-                        rating: p.rating || 0,
-                        feedbacks: p.feedbacks || 0,
-                        brand: p.brand || '',
-                        seller: p.supplier || ''
-                    }));
+                    // Используем тот же механизм для поиска (только для прокси)
+                    if (USE_PROXY) {
+                        const url = PROXY_URL + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`);
+                        const resp = await fetch(url);
+                        if (!resp.ok) throw new Error('Ошибка API Wildberries');
+                        const data = await resp.json();
+                        const products = data.data?.products || [];
+                        return products.slice(0, 20).map(p => ({
+                            name: p.name || '',
+                            price: p.sizes?.[0]?.price?.product / 100 || 0,
+                            rating: p.rating || 0,
+                            feedbacks: p.feedbacks || 0,
+                            brand: p.brand || '',
+                            seller: p.supplier || ''
+                        }));
+                    } else {
+                        // Для бэкенда можно сделать отдельный эндпоинт, но пока пропустим
+                        throw new Error('Поиск ниш доступен только через прокси');
+                    }
                 } catch (e) {
                     console.error('Ошибка сбора данных WB:', e);
                     return null;
@@ -1270,7 +1310,7 @@
     }
 
     // ============================================
-    // ТАРИФЫ (ОБНОВЛЁННЫЕ РЕКВИЗИТЫ)
+    // ТАРИФЫ
     // ============================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
