@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        /* === Стили (без изменений) === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -169,7 +168,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.3</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 10.5</div>
 </div>
 
 <!-- Модальные окна -->
@@ -604,7 +603,6 @@
                 articleStatus.textContent = '⏳ Получаю данные...';
                 articleStatus.style.color = '#2563eb';
                 try {
-                    // Прокси для обхода CORS
                     const proxy = 'https://corsproxy.io/?';
                     const detailUrl = proxy + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
                     const detailResp = await fetch(detailUrl);
@@ -613,7 +611,6 @@
                     const product = detailData.data?.products?.[0];
                     if (!product) throw new Error('Товар с таким артикулом не найден.');
 
-                    // 2. Конкуренты
                     const nameParts = product.name.split('/');
                     const searchQuery = nameParts[0]?.trim() || product.name;
                     const searchUrl = proxy + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&page=1`);
@@ -1273,7 +1270,7 @@
     }
 
     // ============================================
-    // ТАРИФЫ
+    // ТАРИФЫ (ОБНОВЛЁННЫЕ РЕКВИЗИТЫ)
     // ============================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
@@ -1324,7 +1321,7 @@
                 <div class="payment-info">
                     <h4 style="margin-bottom: 8px;">💳 Как оплатить</h4>
                     <p><span class="label">СБП:</span> перевод на номер телефона <strong>+7 902 881 97 11</strong> (получатель: Соловьева Евгения Ивановна).</p>
-                    <p><span class="label">Банковская карта:</span> <strong>2202 2092 3186 1286</strong> (Сбербанк).</p>
+                    <p><span class="label">Банковская карта:</span> <strong>2202 2005 2302 6878</strong> (Сбербанк).</p>
                     <p><span class="label">Комментарий к переводу:</span> укажите ваш <strong>логин</strong> и желаемый тариф (Старт, Про или Бизнес).</p>
                     <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите нам на почту <strong>wbanalytics5@gmail.com</strong> с подтверждением, и мы активируем тариф в течение 24 часов.</p>
                 </div>
