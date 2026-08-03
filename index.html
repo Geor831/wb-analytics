@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        /* === Стили (без изменений, оставляю как в предыдущей версии) === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -169,7 +168,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 12.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 15.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -209,202 +208,10 @@
     'use strict';
 
     const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
+    const APIFY_TOKEN = "apify_api_jfJGIMOKF0N2nbkfYY9KudxqrrTArI3S1hdH";
 
     // ============================================================
-    // НАСТРОЙКА БЭКЕНДА
-    // ============================================================
-    const USE_PROXY = false; // true — прокси, false — бэкенд
-    const BACKEND_URL = "https://ваш-адрес.onrender.com"; // замените на ваш адрес (Render, PythonAnywhere и т.д.)
-    const PROXY_URL = "https://corsproxy.io/?";
-    const PROXY_URL_ALT = "https://api.allorigins.win/raw?url=";
-
-    // ============================================================
-    // СИСТЕМНЫЕ ПРОМПТЫ ДЛЯ ВСЕХ ЧАТОВ (детальные, структурированные)
-    // ============================================================
-    const SYSTEM_PROMPTS = {
-        analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — давать максимально полные, структурированные и практичные ответы на основе анализа отзывов (PDF или артикула).
-
-        Правила:
-        1. Анализируй данные со всех сторон — выделяй тренды, паттерны, аномалии.
-        2. Ответ должен состоять из блоков:
-           - Общая картина (краткий вывод)
-           - Детальный разбор (плюсы, минусы, частотность слов)
-           - Практические рекомендации (что улучшить, на что обратить внимание)
-           - Сравнение с конкурентами (если есть данные)
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные рекомендации.
-
-        Правила:
-        1. Анализируй товар и проблему со всех сторон — учитывай категорию, целевую аудиторию, конкурентов.
-        2. Ответ должен состоять из блоков:
-           - Суть проблемы (кратко)
-           - Детальный разбор (что работает, что нет)
-           - Пошаговый план улучшения (с приоритетами)
-           - Дополнительные советы (фишки, лайфхаки)
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные стратегии для увеличения цены и маржинальности.
-
-        Правила:
-        1. Анализируй товар, рынок и конкурентов со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть запроса (кратко)
-           - Анализ текущей ситуации (цена, позиционирование, конкуренты)
-           - Стратегии повышения цены (с конкретными шагами)
-           - Риски и как их минимизировать
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные сравнения конкурентов.
-
-        Правила:
-        1. Анализируй конкурентов со всех сторон — цены, рейтинги, отзывы, позиционирование.
-        2. Ответ должен состоять из блоков:
-           - Общая картина (краткий вывод)
-           - Детальный разбор (таблица сравнения)
-           - Слабые места конкурентов
-           - Ваши возможности для обгона
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные варианты ответов на отзывы.
-
-        Правила:
-        1. Анализируй отзыв со всех сторон — тон, суть жалобы или похвалы, ожидания клиента.
-        2. Ответ должен состоять из блоков:
-           - Анализ отзыва (кратко)
-           - 3 варианта ответа (вежливый, официальный, дружелюбный)
-           - Рекомендация по тону и ключевым фразам
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        marketing: `Ты — эксперт по маркетингу и продвижению на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные идеи для продвижения товаров.
-
-        Правила:
-        1. Анализируй товар, аудиторию и рынок со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть задачи (кратко)
-           - Анализ целевой аудитории и конкурентов
-           - 5 конкретных идей продвижения (с описанием и бюджетом)
-           - Оценка эффективности и рисков
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        stock: `Ты — эксперт по управлению запасами и прогнозированию спроса на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные прогнозы и рекомендации по закупкам.
-
-        Правила:
-        1. Анализируй артикул, сезонность, тренды и отзывы со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть запроса (кратко)
-           - Анализ текущего спроса и сезонности
-           - Прогноз по месяцам (таблица)
-           - Рекомендации по закупкам и срокам
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        naming: `Ты — эксперт по неймингу и копирайтингу для Wildberries. Твоя задача — давать максимально полные, структурированные и практичные варианты названий, слоганов и УТП.
-
-        Правила:
-        1. Анализируй товар, аудиторию и конкурентов со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть задачи (кратко)
-           - Анализ текущего нейминга (если есть)
-           - 10 вариантов названий (с пояснением)
-           - 5 слоганов и 3 УТП
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        niche: `Ты — эксперт по поиску ниш и анализу рынка на Wildberries. Твоя задача — давать максимально полные, структурированные и практичные рекомендации по поиску перспективных ниш.
-
-        Правила:
-        1. Анализируй данные запроса, тренды и конкурентов со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть запроса (кратко)
-           - Анализ текущего рынка и трендов
-           - Топ-3 перспективные ниши (с таблицей)
-           - Рекомендации по входу в нишу
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
-        packaging: `Ты — эксперт по упаковке для маркетплейсов. Твоя задача — давать максимально полные, структурированные и практичные рекомендации по упаковке товаров для Wildberries.
-
-        Правила:
-        1. Анализируй тип товара, его габариты, хрупкость и требования маркетплейса.
-        2. Ответ должен состоять из блоков:
-           - Суть вопроса (кратко)
-           - Требования Wildberries к упаковке
-           - Рекомендации по материалам (с таблицей)
-           - Пошаговая инструкция
-           - Риски и частые ошибки
-           - Итоговая рекомендация
-        3. Учитывай возрастные ограничения и особенности товара (18+, хрупкость, запахи).
-        4. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        5. Не пиши «воду» — каждый абзац должен нести смысл.
-        6. Будь дружелюбным и уверенным.
-        7. Отвечай только на русском языке.`,
-
-        suppliers: `Ты — эксперт по закупкам и поиску поставщиков для Wildberries. Твоя задача — давать максимально полные, структурированные и практичные рекомендации по поиску и проверке поставщиков.
-
-        Правила:
-        1. Анализируй категорию товара, бюджет и требования со всех сторон.
-        2. Ответ должен состоять из блоков:
-           - Суть запроса (кратко)
-           - Каналы поиска поставщиков (список)
-           - Чек-лист проверки поставщика
-           - Рекомендации по переговорам и закупкам
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`
-    };
-
-    // ============================================================
-    // ФУНКЦИЯ ПОЛУЧЕНИЯ ДАННЫХ
-    // ============================================================
-    async function fetchProductData(article) {
-        if (USE_PROXY) {
-            try {
-                const url = PROXY_URL + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
-                const resp = await fetch(url);
-                if (!resp.ok) throw new Error('Прокси не отвечает');
-                return await resp.json();
-            } catch (e) {
-                const urlAlt = PROXY_URL_ALT + encodeURIComponent(`https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`);
-                const respAlt = await fetch(urlAlt);
-                if (!respAlt.ok) throw new Error('Все прокси недоступны');
-                return await respAlt.json();
-            }
-        } else {
-            const url = `${BACKEND_URL}/api/analyze/${article}`;
-            const resp = await fetch(url);
-            if (!resp.ok) throw new Error('Бэкенд не отвечает');
-            return await resp.json();
-        }
-    }
-
-    // ============================================================
-    // ПОЛЬЗОВАТЕЛЬ (без изменений)
+    // ПОЛЬЗОВАТЕЛЬ
     // ============================================================
     const USERS_KEY = 'wb_users';
     const SESSION_KEY = 'wb_session';
@@ -520,7 +327,7 @@
     }
 
     // ============================================================
-    // КОНФИГ ЧАТОВ (без изменений)
+    // КОНФИГ ЧАТОВ
     // ============================================================
     const chatConfig = {
         analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или введите артикул для анализа.' },
@@ -630,7 +437,7 @@
                 </div>
                 <div class="article-input-area">
                     <div class="row">
-                        <input type="text" id="articleInput" placeholder="Введите артикул Wildberries (например: 61472739)">
+                        <input type="text" id="articleInput" placeholder="Введите артикул (или несколько через запятую, например: 61472739, 157065568)">
                         <button class="btn" id="articleAnalyzeBtn">Анализировать по артикулу</button>
                     </div>
                     <div class="status" id="articleStatus"></div>
@@ -668,6 +475,152 @@
 
         panel.innerHTML = html;
         initChat(tabName);
+    }
+
+    // ============================================================
+    // НОВАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ДАННЫХ ЧЕРЕЗ APIFY
+    // ============================================================
+    async function fetchProductData(articles) {
+        const RUN_URL = `https://api.apify.com/v2/acts/getascraper~wildberries-scraper/runs?token=${APIFY_TOKEN}`;
+        
+        // Приводим к массиву (если передан один артикул — превращаем в массив)
+        let nmIds = Array.isArray(articles) ? articles.map(a => parseInt(a)) : [parseInt(articles)];
+        
+        const input = {
+            searchQueries: [],
+            nmIds: nmIds,
+            maxItems: nmIds.length,
+            region: "MOSCOW",
+            proxyConfiguration: {
+                useApifyProxy: true,
+                apifyProxyGroups: ["RESIDENTIAL"]
+            }
+        };
+        
+        try {
+            const runResponse = await fetch(RUN_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(input)
+            });
+            const runData = await runResponse.json();
+            if (!runData.data || !runData.data.id) {
+                throw new Error('Не удалось запустить актор');
+            }
+            const runId = runData.data.id;
+            
+            let status = "RUNNING";
+            let attempts = 0;
+            while (status !== "SUCCEEDED" && attempts < 15) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const statusResponse = await fetch(
+                    `https://api.apify.com/v2/acts/getascraper~wildberries-scraper/runs/${runId}?token=${APIFY_TOKEN}`
+                );
+                const statusData = await statusResponse.json();
+                status = statusData.data.status;
+                attempts++;
+            }
+            
+            if (status !== "SUCCEEDED") {
+                throw new Error("Актор не завершился успешно");
+            }
+            
+            const datasetResponse = await fetch(
+                `https://api.apify.com/v2/datasets/${runId}/items?token=${APIFY_TOKEN}`
+            );
+            const data = await datasetResponse.json();
+            
+            if (!data || data.length === 0) {
+                throw new Error("Товар(ы) не найден(ы)");
+            }
+            
+            // Если запрашивали один артикул — возвращаем один продукт
+            if (nmIds.length === 1) {
+                const product = data[0];
+                return {
+                    product: {
+                        id: product.nmId || nmIds[0],
+                        name: product.name || "Неизвестно",
+                        price: product.salePrice || product.basicPrice || 0,
+                        rating: product.rating || 0,
+                        feedbacks: product.feedbacks || 0,
+                        brand: product.brand || "",
+                        seller: product.supplier || ""
+                    },
+                    competitors: []
+                };
+            } else {
+                // Несколько артикулов — возвращаем все
+                return {
+                    products: data.map(p => ({
+                        id: p.nmId || '',
+                        name: p.name || "Неизвестно",
+                        price: p.salePrice || p.basicPrice || 0,
+                        rating: p.rating || 0,
+                        feedbacks: p.feedbacks || 0,
+                        brand: p.brand || "",
+                        seller: p.supplier || ""
+                    })),
+                    competitors: []
+                };
+            }
+        } catch (error) {
+            console.error("Apify ошибка:", error);
+            throw error;
+        }
+    }
+
+    // ============================================================
+    // АНАЛИЗ ПО АРТИКУЛУ (С ПОДДЕРЖКОЙ НЕСКОЛЬКИХ)
+    // ============================================================
+    async function analyzeByArticle(articleInput) {
+        const articleStatus = document.getElementById('articleStatus');
+        if (articleStatus) {
+            articleStatus.textContent = '⏳ Получаю данные...';
+            articleStatus.style.color = '#2563eb';
+        }
+        try {
+            const data = await fetchProductData(articleInput);
+            if (data.product) {
+                const product = data.product;
+                let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
+                msg += `📦 *Название:* ${product.name}\n`;
+                msg += `💰 *Цена:* ${product.price} ₽\n`;
+                msg += `⭐ *Рейтинг:* ${product.rating}\n`;
+                msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
+                if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
+                if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n`;
+                if (articleStatus) {
+                    articleStatus.textContent = '✅ Анализ завершён!';
+                    articleStatus.style.color = '#16a34a';
+                }
+                return msg;
+            } else if (data.products) {
+                let msg = `📊 *Анализ нескольких артикулов (${data.products.length} шт.)*\n\n`;
+                data.products.forEach((product, index) => {
+                    msg += `${index+1}. *${product.name || 'Без названия'}*\n`;
+                    msg += `   📦 Артикул: ${product.id}\n`;
+                    msg += `   💰 Цена: ${product.price} ₽\n`;
+                    msg += `   ⭐ Рейтинг: ${product.rating}\n`;
+                    msg += `   💬 Отзывов: ${product.feedbacks}\n`;
+                    if (product.brand) msg += `   🏷️ Бренд: ${product.brand}\n`;
+                    if (product.seller) msg += `   🏢 Продавец: ${product.seller}\n\n`;
+                });
+                if (articleStatus) {
+                    articleStatus.textContent = '✅ Анализ завершён!';
+                    articleStatus.style.color = '#16a34a';
+                }
+                return msg;
+            } else {
+                throw new Error('Неизвестный формат ответа');
+            }
+        } catch (error) {
+            if (articleStatus) {
+                articleStatus.textContent = `❌ Ошибка: ${error.message}`;
+                articleStatus.style.color = '#dc2626';
+            }
+            return null;
+        }
     }
 
     // ============================================================
@@ -724,9 +677,9 @@
             }
         });
 
-        // ============================================================
+        // ============================
         // ОСОБАЯ ЛОГИКА ДЛЯ АНАЛИТИКИ (PDF + артикул)
-        // ============================================================
+        // ============================
         if (tabName === 'analytics') {
             // --- PDF ---
             const fileInput = document.getElementById('analytics-file');
@@ -788,64 +741,24 @@
                 }
             });
 
-            // --- АРТИКУЛ ---
+            // --- АРТИКУЛ (через Apify) ---
             const articleInput = document.getElementById('articleInput');
             const articleBtn = document.getElementById('articleAnalyzeBtn');
             const articleStatus = document.getElementById('articleStatus');
 
-            async function analyzeByArticle(article) {
-                articleStatus.textContent = '⏳ Получаю данные...';
-                articleStatus.style.color = '#2563eb';
-                try {
-                    const data = await fetchProductData(article);
-                    let product, competitors;
-                    if (USE_PROXY) {
-                        const products = data.data?.products;
-                        if (!products || products.length === 0) throw new Error('Товар не найден');
-                        product = products[0];
-                        competitors = [];
-                    } else {
-                        if (data.error) throw new Error(data.error);
-                        product = data.product;
-                        competitors = data.competitors || [];
-                    }
-
-                    // Формируем запрос к AI для детального анализа
-                    const prompt = `Проанализируй товар и его конкурентов на Wildberries. Данные:
-Товар:
-- Название: ${product.name}
-- Цена: ${product.sizes?.[0]?.price?.product / 100 || 0} ₽
-- Рейтинг: ${product.rating || 0}
-- Отзывов: ${product.feedbacks || 0}
-- Бренд: ${product.brand || 'не указан'}
-- Продавец: ${product.supplier || 'не указан'}
-
-Конкуренты (если есть): ${competitors.length > 0 ? JSON.stringify(competitors, null, 2) : 'не найдены'}
-
-Дай детальный анализ:
-1. Общая картина товара на рынке.
-2. Сильные и слабые стороны (сравнение с конкурентами).
-3. Рекомендации по улучшению карточки, цены, позиционирования.
-Ответ должен быть структурированным, с заголовками, списками и конкретными цифрами.`;
-
-                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.analytics);
-                    articleStatus.textContent = '✅ Анализ завершён!';
-                    articleStatus.style.color = '#16a34a';
-                    return analysis;
-                } catch (error) {
-                    articleStatus.textContent = `❌ Ошибка: ${error.message}`;
-                    articleStatus.style.color = '#dc2626';
-                    return null;
-                }
-            }
-
             articleBtn.addEventListener('click', async function() {
-                const article = articleInput.value.trim();
-                if (!article) { alert('Введите артикул товара.'); return; }
-                if (!/^\d+$/.test(article)) { alert('Артикул должен состоять только из цифр.'); return; }
-                const result = await analyzeByArticle(article);
+                const raw = articleInput.value.trim();
+                if (!raw) { alert('Введите артикул(ы).'); return; }
+                let articles = raw.split(',').map(s => s.trim()).filter(s => s !== '');
+                if (articles.some(s => !/^\d+$/.test(s))) {
+                    alert('Артикулы должны состоять только из цифр.');
+                    return;
+                }
+                // Если один артикул — передаём строку, если несколько — массив
+                const inputForAnalysis = articles.length === 1 ? articles[0] : articles;
+                const result = await analyzeByArticle(inputForAnalysis);
                 if (result) {
-                    addMessage(tabName, messagesId, 'user', `🔍 Анализ артикула: ${article}`);
+                    addMessage(tabName, messagesId, 'user', `🔍 Анализ артикула: ${raw}`);
                     addMessage(tabName, messagesId, 'ai', result);
                     articleInput.value = '';
                 }
@@ -856,9 +769,9 @@
             });
         }
 
-        // ============================================================
+        // ============================
         // ОСОБАЯ ЛОГИКА ДЛЯ ЮНИТ-ЭКОНОМИКИ (без AI)
-        // ============================================================
+        // ============================
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -893,38 +806,62 @@
             });
         }
 
-        // ============================================================
+        // ============================
         // ОСОБАЯ ЛОГИКА ДЛЯ ПОИСКА НИШ
-        // ============================================================
+        // ============================
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
 
             async function fetchWildberriesData(query) {
                 try {
-                    if (USE_PROXY) {
-                        const url = PROXY_URL + encodeURIComponent(`https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`);
-                        const resp = await fetch(url);
-                        if (!resp.ok) throw new Error('Ошибка API Wildberries');
-                        const data = await resp.json();
-                        const products = data.data?.products || [];
-                        return products.slice(0, 20).map(p => ({
-                            name: p.name || '',
-                            price: p.sizes?.[0]?.price?.product / 100 || 0,
-                            rating: p.rating || 0,
-                            feedbacks: p.feedbacks || 0,
-                            brand: p.brand || '',
-                            seller: p.supplier || ''
-                        }));
-                    } else {
-                        const url = `${BACKEND_URL}/api/search?q=${encodeURIComponent(query)}`;
-                        const resp = await fetch(url);
-                        if (!resp.ok) throw new Error('Ошибка API Wildberries');
-                        const data = await resp.json();
-                        return data.products || [];
+                    // Используем Apify для поиска
+                    const searchUrl = `https://api.apify.com/v2/acts/getascraper~wildberries-scraper/runs?token=${APIFY_TOKEN}`;
+                    const input = {
+                        searchQueries: [query],
+                        maxItems: 20,
+                        region: "MOSCOW",
+                        proxyConfiguration: {
+                            useApifyProxy: true,
+                            apifyProxyGroups: ["RESIDENTIAL"]
+                        }
+                    };
+                    const runResponse = await fetch(searchUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(input)
+                    });
+                    const runData = await runResponse.json();
+                    if (!runData.data || !runData.data.id) throw new Error('Не удалось запустить поиск');
+                    const runId = runData.data.id;
+                    
+                    let status = "RUNNING";
+                    let attempts = 0;
+                    while (status !== "SUCCEEDED" && attempts < 15) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        const statusResponse = await fetch(
+                            `https://api.apify.com/v2/acts/getascraper~wildberries-scraper/runs/${runId}?token=${APIFY_TOKEN}`
+                        );
+                        const statusData = await statusResponse.json();
+                        status = statusData.data.status;
+                        attempts++;
                     }
+                    if (status !== "SUCCEEDED") throw new Error("Поиск не завершился");
+                    
+                    const datasetResponse = await fetch(
+                        `https://api.apify.com/v2/datasets/${runId}/items?token=${APIFY_TOKEN}`
+                    );
+                    const data = await datasetResponse.json();
+                    return data.map(p => ({
+                        name: p.name || '',
+                        price: p.salePrice || p.basicPrice || 0,
+                        rating: p.rating || 0,
+                        feedbacks: p.feedbacks || 0,
+                        brand: p.brand || '',
+                        seller: p.supplier || ''
+                    }));
                 } catch (e) {
-                    console.error('Ошибка сбора данных WB:', e);
+                    console.error('Ошибка поиска ниш:', e);
                     return null;
                 }
             }
@@ -1122,6 +1059,60 @@
         modal.classList.add('active');
         searchInput.focus();
     }
+
+    // ============================================================
+    // СИСТЕМНЫЕ ПРОМПТЫ (ДЕТАЛЬНЫЕ)
+    // ============================================================
+    const SYSTEM_PROMPTS = {
+        analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — давать максимально полные, структурированные и практичные ответы на основе анализа отзывов (PDF или артикула).
+
+        Правила:
+        1. Анализируй данные со всех сторон — выделяй тренды, паттерны, аномалии.
+        2. Ответ должен состоять из блоков:
+           - Общая картина (краткий вывод)
+           - Детальный разбор (плюсы, минусы, частотность слов)
+           - Практические рекомендации (что улучшить, на что обратить внимание)
+           - Сравнение с конкурентами (если есть данные)
+        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
+        4. Не пиши «воду» — каждый абзац должен нести смысл.
+        5. Будь дружелюбным и уверенным.
+        6. Отвечай только на русском языке.`,
+
+        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. ...`,
+
+        teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. ...`,
+
+        competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. ...`,
+
+        replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. ...`,
+
+        marketing: `Ты — эксперт по маркетингу и продвижению на Wildberries. ...`,
+
+        stock: `Ты — эксперт по управлению запасами и прогнозированию спроса на Wildberries. ...`,
+
+        naming: `Ты — эксперт по неймингу и копирайтингу для Wildberries. ...`,
+
+        niche: `Ты — эксперт по поиску ниш и анализу рынка на Wildberries. ...`,
+
+        packaging: `Ты — эксперт по упаковке для маркетплейсов. Твоя задача — давать максимально полные, структурированные и практичные рекомендации по упаковке товаров для Wildberries.
+
+        Правила:
+        1. Анализируй тип товара, его габариты, хрупкость и требования маркетплейса.
+        2. Ответ должен состоять из блоков:
+           - Суть вопроса (кратко)
+           - Требования Wildberries к упаковке
+           - Рекомендации по материалам (с таблицей)
+           - Пошаговая инструкция
+           - Риски и частые ошибки
+           - Итоговая рекомендация
+        3. Учитывай возрастные ограничения и особенности товара (18+, хрупкость, запахи).
+        4. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
+        5. Не пиши «воду» — каждый абзац должен нести смысл.
+        6. Будь дружелюбным и уверенным.
+        7. Отвечай только на русском языке.`,
+
+        suppliers: `Ты — эксперт по закупкам и поиску поставщиков для Wildberries. ...`
+    };
 
     // ============================================================
     // ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ
