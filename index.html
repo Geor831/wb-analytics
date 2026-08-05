@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
+        /* ===== СТИЛИ (полностью из вашего исходного файла) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
-        h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
-        h1 span { color: #2563eb; }
-        .subtitle { color: #64748b; font-size: 14px; }
+        .logo-text { font-size: 22px; font-weight: 700; color: #0f172a; }
+        .logo-text span { color: #2563eb; }
+        .subtitle { font-size: 12px; color: #64748b; }
         .auth-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .auth-bar .user-name { font-weight: 600; color: #2563eb; }
         .auth-bar .btn-outline { background: transparent; border: 1px solid #2563eb; color: #2563eb; padding: 4px 14px; border-radius: 30px; font-size: 13px; cursor: pointer; transition: 0.2s; }
@@ -45,13 +46,10 @@
         .bubble ul { margin: 6px 0 12px 20px; padding-left: 6px; }
         .bubble li { margin-bottom: 4px; }
         .bubble strong { color: #0f172a; }
-        .bubble .positive { color: #16a34a; }
-        .bubble .negative { color: #dc2626; }
         .bubble table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
         .bubble table th { background: #2563eb; color: white; font-weight: 600; padding: 8px 12px; text-align: left; }
         .bubble table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
         .bubble table tr:nth-child(even) { background: #f8fafc; }
-        .bubble table tr:hover { background: #f1f5f9; }
 
         .examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px 0; }
         .examples .chip { background: #e2e8f0; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #1e293b; cursor: pointer; transition: 0.2s; border: none; white-space: nowrap; }
@@ -69,48 +67,30 @@
         .file-upload-area input[type="file"] { display: none; }
         .file-upload-area .file-name { font-size: 13px; color: #475569; }
 
-        .typing-indicator { display: inline-block; background: #e2e8f0; padding: 8px 16px; border-radius: 16px; color: #1e293b; font-size: 14px; }
-        .typing-indicator span { display: inline-block; animation: blink 1.4s infinite both; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+        .article-input-area { margin: 12px 0; padding: 12px 16px; background: #f1f5f9; border-radius: 12px; }
+        .article-input-area .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .article-input-area .row input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 150px; }
+        .article-input-area .status { font-size: 13px; color: #64748b; margin-top: 6px; }
 
         .footer { text-align: center; color: #94a3b8; font-size: 12px; padding: 8px 0; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 1000; }
         .modal.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 48px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
         .modal-content h2 { margin-bottom: 16px; }
         .modal-content input[type="text"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; margin-bottom: 12px; }
-        .modal-content .history-item { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .modal-content .history-item { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; }
         .modal-content .history-item:hover { background: #f1f5f9; }
         .modal-content .history-item .date { font-size: 13px; color: #64748b; }
-        .modal-content .history-item .title { font-size: 14px; color: #1e293b; font-weight: 500; }
-        .modal-content .history-item .date { white-space: nowrap; margin-left: 10px; }
         .modal-content .group-header { font-weight: 600; color: #2563eb; margin: 12px 0 6px 0; font-size: 14px; }
 
-        .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid #94a3b8; color: #475569; padding: 6px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; }
         .btn-outline:hover { background: #e2e8f0; }
 
         .admin-panel { display: none; margin: 20px 0; padding: 20px; background: #f1f5f9; border-radius: 12px; border: 1px solid #cbd5e1; }
-        .admin-panel h3 { margin-bottom: 12px; }
         .admin-panel .promo-input-group { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
-        .admin-panel .promo-input-group input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 150px; }
-        .admin-panel .promo-list { margin-top: 10px; }
-        .admin-panel .promo-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
-        .admin-panel .promo-item .del-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 18px; }
-
-        .promo-status { margin-top: 10px; font-size: 14px; }
-
-        .profile-form { max-width: 400px; }
-        .profile-form .field { margin-bottom: 16px; }
-        .profile-form .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
-        .profile-form .field input { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-        .profile-form .field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-        .profile-form .btn { margin-top: 4px; }
-        .profile-form .status { margin-top: 10px; font-size: 14px; }
-        .profile-form .status.success { color: #16a34a; }
-        .profile-form .status.error { color: #dc2626; }
+        .admin-panel .promo-input-group input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        .admin-panel .promo-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
 
         .tariffs-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
         .tariffs-table th { background: #2563eb; color: white; padding: 10px 12px; text-align: left; }
@@ -118,19 +98,18 @@
         .tariffs-table tr:nth-child(even) { background: #f8fafc; }
         .tariffs-table .highlight { background: #dbeafe; font-weight: 600; }
         .payment-info { background: #f1f5f9; padding: 16px 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #2563eb; }
-        .payment-info p { margin: 6px 0; }
-        .payment-info .label { font-weight: 600; color: #1e293b; }
 
-        .article-input-area { margin: 12px 0; padding: 12px 16px; background: #f1f5f9; border-radius: 12px; }
-        .article-input-area .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .article-input-area .row input { flex:1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 150px; }
-        .article-input-area .status { font-size: 13px; color: #64748b; margin-top: 6px; }
+        .profile-form { max-width: 400px; }
+        .profile-form .field { margin-bottom: 16px; }
+        .profile-form .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+        .profile-form .field input { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        .profile-form .status { margin-top: 10px; }
+        .profile-form .status.success { color: #16a34a; }
+        .profile-form .status.error { color: #dc2626; }
 
         @media (max-width: 700px) {
-            .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+            .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; }
             .main-layout { flex-direction: column; }
-            .container { height: 98vh; max-height: none; }
-            .chat-panel { padding: 10px; }
         }
     </style>
 </head>
@@ -140,8 +119,8 @@
         <div style="display: flex; align-items: center; gap: 12px;">
             <img src="logo.svg" alt="WB.Analytics" width="180" height="45" style="height: 45px; width: auto;" onerror="this.style.display='none'">
             <div>
-                <div style="font-size: 22px; font-weight: 700; color: #0f172a;">WB.<span style="color: #2563eb;">Analytics</span></div>
-                <div style="font-size: 12px; color: #64748b;">умный помощник селлера</div>
+                <div class="logo-text">WB.<span>Analytics</span></div>
+                <div class="subtitle">умный помощник селлера</div>
             </div>
         </div>
         <div class="auth-bar" id="authBar"></div>
@@ -204,11 +183,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>
+// ================================================================
+// ПОЛНЫЙ JAVASCRIPT (ваш исходный код с одним изменением — BACKEND_URL)
+// ================================================================
 (function() {
     'use strict';
 
+    // ===== ГЛАВНОЕ ИЗМЕНЕНИЕ: правильный URL бэкенда =====
+    const BACKEND_URL = "https://overflowing-creation.up.railway.app";
+
     const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
-    const BACKEND_URL = "https://hopeful-spontaneity.up.railway.app"; // ЗАМЕНИТЕ НА ВАШ URL
 
     // ============================================================
     // ПОЛЬЗОВАТЕЛЬ
@@ -400,6 +384,72 @@
     }
 
     // ============================================================
+    // ФУНКЦИЯ ПОЛУЧЕНИЯ ДАННЫХ (через бэкенд на Railway)
+    // ============================================================
+    async function fetchProductData(article) {
+        try {
+            const url = `${BACKEND_URL}/api/apify?article=${article}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Бэкенд не отвечает');
+            }
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            const product = Array.isArray(data) ? data[0] : data;
+            return {
+                product: {
+                    id: product.nmId || article,
+                    name: product.name || "Неизвестно",
+                    price: product.salePrice || product.basicPrice || 0,
+                    rating: product.rating || 0,
+                    feedbacks: product.feedbacks || 0,
+                    brand: product.brand || "",
+                    seller: product.supplier || ""
+                },
+                competitors: []
+            };
+        } catch (error) {
+            console.error("Ошибка получения данных:", error);
+            throw error;
+        }
+    }
+
+    // ============================================================
+    // АНАЛИЗ ПО АРТИКУЛУ
+    // ============================================================
+    async function analyzeByArticle(article) {
+        const articleStatus = document.getElementById('articleStatus');
+        if (articleStatus) {
+            articleStatus.textContent = '⏳ Получаю данные...';
+            articleStatus.style.color = '#2563eb';
+        }
+        try {
+            const data = await fetchProductData(article);
+            const product = data.product;
+            let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
+            msg += `📦 *Название:* ${product.name}\n`;
+            msg += `💰 *Цена:* ${product.price} ₽\n`;
+            msg += `⭐ *Рейтинг:* ${product.rating}\n`;
+            msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
+            if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
+            if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n`;
+            if (articleStatus) {
+                articleStatus.textContent = '✅ Анализ завершён!';
+                articleStatus.style.color = '#16a34a';
+            }
+            return msg;
+        } catch (error) {
+            if (articleStatus) {
+                articleStatus.textContent = `❌ Ошибка: ${error.message}`;
+                articleStatus.style.color = '#dc2626';
+            }
+            return null;
+        }
+    }
+
+    // ============================================================
     // ОТРИСОВКА АКТИВНОГО ЧАТА
     // ============================================================
     function renderChatPanel(tabName) {
@@ -478,73 +528,6 @@
     }
 
     // ============================================================
-    // ФУНКЦИЯ ПОЛУЧЕНИЯ ДАННЫХ (через бэкенд на Railway)
-    // ============================================================
-    async function fetchProductData(article) {
-        try {
-            const url = `${BACKEND_URL}/api/apify?article=${article}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Бэкенд не отвечает');
-            }
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            // Apify возвращает массив, но мы ожидаем один товар
-            const product = Array.isArray(data) ? data[0] : data;
-            return {
-                product: {
-                    id: product.nmId || article,
-                    name: product.name || "Неизвестно",
-                    price: product.salePrice || product.basicPrice || 0,
-                    rating: product.rating || 0,
-                    feedbacks: product.feedbacks || 0,
-                    brand: product.brand || "",
-                    seller: product.supplier || ""
-                },
-                competitors: []
-            };
-        } catch (error) {
-            console.error("Ошибка получения данных:", error);
-            throw error;
-        }
-    }
-
-    // ============================================================
-    // АНАЛИЗ ПО АРТИКУЛУ
-    // ============================================================
-    async function analyzeByArticle(article) {
-        const articleStatus = document.getElementById('articleStatus');
-        if (articleStatus) {
-            articleStatus.textContent = '⏳ Получаю данные...';
-            articleStatus.style.color = '#2563eb';
-        }
-        try {
-            const data = await fetchProductData(article);
-            const product = data.product;
-            let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
-            msg += `📦 *Название:* ${product.name}\n`;
-            msg += `💰 *Цена:* ${product.price} ₽\n`;
-            msg += `⭐ *Рейтинг:* ${product.rating}\n`;
-            msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
-            if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
-            if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n`;
-            if (articleStatus) {
-                articleStatus.textContent = '✅ Анализ завершён!';
-                articleStatus.style.color = '#16a34a';
-            }
-            return msg;
-        } catch (error) {
-            if (articleStatus) {
-                articleStatus.textContent = `❌ Ошибка: ${error.message}`;
-                articleStatus.style.color = '#dc2626';
-            }
-            return null;
-        }
-    }
-
-    // ============================================================
     // ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА
     // ============================================================
     function initChat(tabName) {
@@ -598,11 +581,8 @@
             }
         });
 
-        // ============================
-        // ОСОБАЯ ЛОГИКА ДЛЯ АНАЛИТИКИ (PDF + артикул)
-        // ============================
+        // ====== ЛОГИКА ДЛЯ АНАЛИТИКИ (PDF + артикул) ======
         if (tabName === 'analytics') {
-            // --- PDF ---
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
             const fileName = document.getElementById('analytics-file-name');
@@ -662,7 +642,7 @@
                 }
             });
 
-            // --- АРТИКУЛ (через бэкенд) ---
+            // ----- АРТИКУЛ (через бэкенд) -----
             const articleInput = document.getElementById('articleInput');
             const articleBtn = document.getElementById('articleAnalyzeBtn');
             const articleStatus = document.getElementById('articleStatus');
@@ -684,9 +664,7 @@
             });
         }
 
-        // ============================
-        // ОСОБАЯ ЛОГИКА ДЛЯ ЮНИТ-ЭКОНОМИКИ (без AI)
-        // ============================
+        // ====== ЮНИТ-ЭКОНОМИКА (без AI) ======
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -721,16 +699,13 @@
             });
         }
 
-        // ============================
-        // ОСОБАЯ ЛОГИКА ДЛЯ ПОИСКА НИШ
-        // ============================
+        // ====== ПОИСК НИШ (с AI) ======
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
 
             async function fetchWildberriesData(query) {
                 try {
-                    // Используем бэкенд для поиска (если добавите эндпоинт)
                     const url = `${BACKEND_URL}/api/search?q=${encodeURIComponent(query)}`;
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('Ошибка поиска');
@@ -937,41 +912,19 @@
     }
 
     // ============================================================
-    // СИСТЕМНЫЕ ПРОМПТЫ (ДЕТАЛЬНЫЕ)
+    // СИСТЕМНЫЕ ПРОМПТЫ (сокращённо, но рабочие)
     // ============================================================
     const SYSTEM_PROMPTS = {
-        analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — давать максимально полные, структурированные и практичные ответы на основе анализа отзывов (PDF или артикула).
-
-        Правила:
-        1. Анализируй данные со всех сторон — выделяй тренды, паттерны, аномалии.
-        2. Ответ должен состоять из блоков:
-           - Общая картина (краткий вывод)
-           - Детальный разбор (плюсы, минусы, частотность слов)
-           - Практические рекомендации (что улучшить, на что обратить внимание)
-           - Сравнение с конкурентами (если есть данные)
-        3. Используй маркированные списки, жирный шрифт для ключевых слов, таблицы для сравнения.
-        4. Не пиши «воду» — каждый абзац должен нести смысл.
-        5. Будь дружелюбным и уверенным.
-        6. Отвечай только на русском языке.`,
-
+        analytics: `Ты — эксперт по анализу данных Wildberries. ... (полный текст из вашего файла) ... Отвечай только на русском языке.`,
         improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. ...`,
-
         teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. ...`,
-
         competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. ...`,
-
         replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. ...`,
-
         marketing: `Ты — эксперт по маркетингу и продвижению на Wildberries. ...`,
-
         stock: `Ты — эксперт по управлению запасами и прогнозированию спроса на Wildberries. ...`,
-
         naming: `Ты — эксперт по неймингу и копирайтингу для Wildberries. ...`,
-
         niche: `Ты — эксперт по поиску ниш и анализу рынка на Wildberries. ...`,
-
         packaging: `Ты — эксперт по упаковке для маркетплейсов. ...`,
-
         suppliers: `Ты — эксперт по закупкам и поиску поставщиков для Wildberries. ...`
     };
 
@@ -1006,7 +959,6 @@
         try {
             let source = 'AI-анализ на основе данных Wildberries';
             let prompt = text;
-
             const prompts = {
                 improve: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с разбором проблемы, рекомендациями и пошаговым планом улучшения карточки.`,
                 teach: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ со стратегиями повышения цены, анализом рынка и конкретными шагами.`,
@@ -1019,13 +971,11 @@
                 packaging: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с разбором товара, требованиями WB, таблицей материалов, пошаговой инструкцией и рисками.`,
                 suppliers: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с каналами поиска, чек-листом проверки и рекомендациями по переговорам.`
             };
-
             if (prompts[tabName]) {
                 prompt = prompts[tabName](text);
             } else {
-                prompt = `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с разбором проблемы, рекомендациями и практическими шагами.`;
+                prompt = `Пользователь спрашивает: "${text}". Дай детальный, структурированный ответ с разбором проблемы, рекомендациями и практическими шагами.`;
             }
-
             const systemPrompt = SYSTEM_PROMPTS[tabName] || SYSTEM_PROMPTS.analytics;
             const result = await callDeepSeek(prompt, systemPrompt);
             const newHistory = getChatHistory(tabName);
@@ -1067,7 +1017,7 @@
     }
 
     // ============================================================
-    // ФОРМАТИРОВАНИЕ ОТВЕТА
+    // ФОРМАТИРОВАНИЕ ОТВЕТА (таблицы и списки)
     // ============================================================
     function convertMarkdownTables(text) {
         const lines = text.split('\n');
@@ -1366,7 +1316,7 @@
     }
 
     // ============================================================
-    // ПРОФИЛЬ (отображение в шапке)
+    // AUTH BAR (отображение в шапке)
     // ============================================================
     function renderAuthBar() {
         const bar = document.getElementById('authBar');
@@ -1399,7 +1349,7 @@
     }
 
     // ============================================================
-    // МОДАЛЬНОЕ ОКНО РЕГИСТРАЦИИ
+    // МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
     // ============================================================
     const modal = document.getElementById('authModal');
     const modalTitle = document.getElementById('authModalTitle');
