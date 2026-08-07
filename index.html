@@ -143,7 +143,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 21.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 22.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -1110,7 +1110,7 @@
     }
 
     // ============================================================
-    // ТАРИФЫ И ОПЛАТА (ОБНОВЛЁННАЯ ВЕРСИЯ С КНОПКАМИ)
+    // ТАРИФЫ (с многоразовыми ссылками на оплату)
     // ============================================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
@@ -1159,9 +1159,9 @@
                 </table>
 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;">
-                    <button class="btn" onclick="pay(490, 'Старт')">Оплатить 490 ₽</button>
-                    <button class="btn" onclick="pay(990, 'Про')">Оплатить 990 ₽</button>
-                    <button class="btn" onclick="pay(2490, 'Бизнес')">Оплатить 2 490 ₽</button>
+                    <a href="https://yookassa.ru/my/i/anXSO4pDIEnC/l" target="_blank" class="btn">Оплатить 490 ₽</a>
+                    <a href="https://yookassa.ru/my/i/anXShQp1EU1f/l" target="_blank" class="btn">Оплатить 990 ₽</a>
+                    <a href="https://yookassa.ru/my/i/anXSt2cT2WRY/l" target="_blank" class="btn">Оплатить 2 490 ₽</a>
                 </div>
 
                 <div class="payment-info">
@@ -1176,26 +1176,6 @@
 
         panel.innerHTML = html;
     }
-
-    // Функция оплаты (глобальная)
-    window.pay = async function(amount, tariff) {
-        try {
-            const response = await fetch('https://ваш-сервер.ru/create-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, tariff })
-            });
-            const data = await response.json();
-            if (data.confirmation_url) {
-                window.location.href = data.confirmation_url;
-            } else {
-                alert('Ошибка при создании платежа: ' + (data.detail || ''));
-            }
-        } catch (err) {
-            alert('Не удалось соединиться с сервером оплаты. Попробуйте позже.');
-            console.error(err);
-        }
-    };
 
     // ============================================================
     // AUTH BAR
