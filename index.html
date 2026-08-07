@@ -143,7 +143,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 19.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 20.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -305,18 +305,34 @@
     // ============================================================
     const chatConfig = {
         analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF-файл с отзывами для анализа.' },
-        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
-        teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Отвечайте на вопросы, я помогу продавать дороже.' },
-        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Загрузите PDF-файлы с отзывами конкурентов (или один файл с данными о конкурентах).' },
-        replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Вставьте отзыв для генерации ответов.' },
-        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел (цена, себестоимость, логистика, комиссия, реклама) – мгновенный расчёт прибыли.' },
-        marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Опишите товар, я предложу идеи продвижения.' },
-        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Загрузите файл с историей продаж (CSV) или опишите ситуацию текстом.' },
-        naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Опишите товар для генерации названий и слоганов.' },
-        niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Опишите свои критерии (категория, цена, конкуренция), я дам рекомендации.' },
-        packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Спросите про упаковку товара.' },
-        suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
+        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Загрузите файл с описанием товара или проблемой, я дам рекомендации.' },
+        teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Загрузите файл с ценами конкурентов или описанием рынка.' },
+        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Загрузите PDF-файлы с отзывами конкурентов (или один файл с данными).' },
+        replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Загрузите файл с отзывами (CSV/TXT) или вставьте отзыв вручную.' },
+        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел через запятую или загрузите CSV с колонками: цена, себестоимость, логистика, комиссия, реклама.' },
+        marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Загрузите файл с описанием товара или рынка.' },
+        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Загрузите CSV/TXT с историей продаж для прогноза.' },
+        naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Загрузите файл с описанием товара.' },
+        niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Загрузите файл с требованиями к нише или опишите текстом.' },
+        packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Загрузите файл с характеристиками товара.' },
+        suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков (текстовый чат).' }
     };
+
+    // ============================================================
+    // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ЧТЕНИЯ ФАЙЛОВ
+    // ============================================================
+    function readFileContent(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e.target.error);
+            if (file.type === 'application/pdf') {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
+        });
+    }
 
     // ============================================================
     // ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ
@@ -374,23 +390,6 @@
     }
 
     // ============================================================
-    // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ЧТЕНИЯ ФАЙЛОВ
-    // ============================================================
-    function readFileContent(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = (e) => reject(e.target.error);
-            // Определяем тип: если PDF, то читаем как ArrayBuffer, иначе как текст
-            if (file.type === 'application/pdf') {
-                reader.readAsArrayBuffer(file);
-            } else {
-                reader.readAsText(file);
-            }
-        });
-    }
-
-    // ============================================================
     // ОТРИСОВКА АКТИВНОГО ЧАТА
     // ============================================================
     function renderChatPanel(tabName) {
@@ -418,22 +417,33 @@
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
 
-        // Добавляем загрузку файлов для чатов, работающих с данными
-        if (tabName === 'analytics' || tabName === 'competitors' || tabName === 'stock') {
-            const accept = tabName === 'stock' ? '.csv,.txt' : '.pdf';
+        // Добавляем загрузку файлов для большинства чатов (кроме suppliers)
+        const fileUploadTabs = ['analytics', 'improve', 'teach', 'competitors', 'replies', 'unit', 'marketing', 'stock', 'naming', 'niche', 'packaging'];
+        if (fileUploadTabs.includes(tabName)) {
+            const accept = tabName === 'analytics' ? '.pdf' :
+                           tabName === 'competitors' ? '.pdf' :
+                           tabName === 'stock' ? '.csv,.txt' :
+                           tabName === 'unit' ? '.csv,.txt' :
+                           '.pdf,.csv,.txt';
             const multiple = tabName === 'competitors' ? 'multiple' : '';
-            const label = tabName === 'analytics' ? '📎 Загрузить PDF с отзывами' :
-                          tabName === 'competitors' ? '📎 Загрузить PDF-файлы с отзывами конкурентов' :
-                          '📎 Загрузить CSV/TXT с историей продаж';
-            const btnId = tabName === 'analytics' ? 'analytics-file-upload' :
-                          tabName === 'competitors' ? 'competitors-file-upload' :
-                          'stock-file-upload';
-            const fileInputId = tabName === 'analytics' ? 'analytics-file-input' :
-                                tabName === 'competitors' ? 'competitors-file-input' :
-                                'stock-file-input';
+            const labelMap = {
+                analytics: '📎 Загрузить PDF с отзывами',
+                improve: '📎 Загрузить файл с описанием товара',
+                teach: '📎 Загрузить файл с ценами конкурентов',
+                competitors: '📎 Загрузить PDF-файлы конкурентов',
+                replies: '📎 Загрузить файл с отзывами (CSV/TXT)',
+                unit: '📎 Загрузить CSV с данными (цена,себестоимость,логистика,комиссия,реклама)',
+                marketing: '📎 Загрузить файл с описанием товара',
+                stock: '📎 Загрузить CSV/TXT с историей продаж',
+                naming: '📎 Загрузить файл с описанием товара',
+                niche: '📎 Загрузить файл с требованиями к нише',
+                packaging: '📎 Загрузить файл с характеристиками товара'
+            };
+            const btnId = `${tabName}-file-upload`;
+            const fileInputId = `${tabName}-file-input`;
             html += `
                 <div class="file-upload-area">
-                    <label class="label" for="${fileInputId}">${label}</label>
+                    <label class="label" for="${fileInputId}">${labelMap[tabName] || '📎 Загрузить файл'}</label>
                     <input type="file" id="${fileInputId}" accept="${accept}" ${multiple}>
                     <span class="file-name" id="${fileInputId}-name">файл не выбран</span>
                     <button class="btn" id="${btnId}" disabled>Анализировать</button>
@@ -441,18 +451,18 @@
             `;
         }
 
-        // Для чатов, где нужен текстовый ввод (остальные), добавляем примеры
+        // Примеры для всех чатов
         const examplesMap = {
             analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
             improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
             teach: ['Как поднять цену?', 'Что добавить для премиум-позиционирования?', 'Стратегия для дорогого товара'],
-            competitors: ['Сравните этих конкурентов', 'Какие слабые места у конкурентов?', 'Как выделиться на фоне конкурентов?'],
+            competitors: ['Сравните этих конкурентов', 'Какие слабые места у конкурентов?', 'Как выделиться?'],
             replies: ['Товар не соответствует описанию, разочарован.', 'Долго ждал доставку.', 'Отличный товар, но дорого.'],
             unit: ['500, 200, 50, 30, 20', '1000, 400, 100, 50, 30'],
             marketing: ['Кокосовые сливки', 'Натуральный мёд', 'Органический кофе'],
             stock: ['Как спрогнозировать спрос?', 'Какие факторы влияют на продажи?'],
             naming: ['Кокосовые сливки натуральные, без сахара', 'Органический мёд, цветочный'],
-            niche: ['Найди нишу до 1000 ₽ с маржой >30%', 'Проанализируй нишу "кокосовые сливки"', 'Какие ниши растут прямо сейчас?', 'Что продавать новичку на WB?'],
+            niche: ['Найди нишу до 1000 ₽ с маржой >30%', 'Проанализируй нишу "кокосовые сливки"', 'Какие ниши растут прямо сейчас?', 'Что продавать новичку?'],
             packaging: ['Как упаковать хрупкий товар?', 'Требования WB к упаковке', 'Какие материалы выбрать?', 'Ошибки в упаковке и штрафы'],
             suppliers: ['Где закупать коробки для WB?', 'Как найти поставщика товара?', 'Чек-лист проверки поставщика', 'Оптовые закупки в Китае']
         };
@@ -521,7 +531,7 @@
             });
         }
 
-        // Основная отправка сообщений (текстовых)
+        // Основная отправка текстовых сообщений
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -532,73 +542,12 @@
             }
         });
 
-        // ====== АНАЛИТИКА (загрузка PDF) ======
-        if (tabName === 'analytics') {
-            const fileInput = document.getElementById('analytics-file-input');
-            const uploadBtn = document.getElementById('analytics-file-upload');
-            const fileName = document.getElementById('analytics-file-input-name');
-            let currentFile = null;
-
-            fileInput.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    currentFile = this.files[0];
-                    fileName.textContent = currentFile.name;
-                    uploadBtn.disabled = false;
-                } else {
-                    currentFile = null;
-                    fileName.textContent = 'файл не выбран';
-                    uploadBtn.disabled = true;
-                }
-            });
-
-            uploadBtn.addEventListener('click', async function() {
-                if (!currentFile) { alert('Выберите PDF.'); return; }
-                addMessage(tabName, messagesId, 'user', `📄 Загружен файл: ${currentFile.name}`);
-                const loadingMsg = '⏳ Анализирую PDF...';
-                addMessage(tabName, messagesId, 'ai', loadingMsg);
-                this.disabled = true;
-                try {
-                    const arrayBuffer = await readFileContent(currentFile);
-                    const pdfjsLib = window.pdfjsLib;
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                    const pdf = await loadingTask.promise;
-                    let fullText = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-                    }
-                    if (!fullText.trim()) throw new Error('Пустой текст из PDF.');
-                    const prompt = `Проанализируй отзывы. Выдели: 1) средний рейтинг, 2) частые плюсы, 3) частые минусы, 4) топ-10 слов с частотой и процентом от общего числа слов (в виде таблицы). Ответ структурируй.\n\n${fullText.slice(0, 8000)}`;
-                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.analytics);
-                    const history = getChatHistory(tabName);
-                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                        history.pop();
-                        saveChatHistory(tabName, history);
-                    }
-                    addMessage(tabName, messagesId, 'ai', analysis, 'Анализ PDF-файла с отзывами');
-                } catch (err) {
-                    const history = getChatHistory(tabName);
-                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                        history.pop();
-                        saveChatHistory(tabName, history);
-                    }
-                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                } finally {
-                    this.disabled = false;
-                    currentFile = null;
-                    fileName.textContent = 'файл не выбран';
-                    fileInput.value = '';
-                }
-            });
-        }
-
-        // ====== КОНКУРЕНТЫ (загрузка нескольких PDF) ======
-        if (tabName === 'competitors') {
-            const fileInput = document.getElementById('competitors-file-input');
-            const uploadBtn = document.getElementById('competitors-file-upload');
-            const fileName = document.getElementById('competitors-file-input-name');
+        // ====== ОБРАБОТКА ЗАГРУЗКИ ФАЙЛОВ ДЛЯ ВСЕХ ЧАТОВ, КРОМЕ SUPPLIERS ======
+        const fileUploadTabs = ['analytics', 'improve', 'teach', 'competitors', 'replies', 'unit', 'marketing', 'stock', 'naming', 'niche', 'packaging'];
+        if (fileUploadTabs.includes(tabName)) {
+            const fileInput = document.getElementById(`${tabName}-file-input`);
+            const uploadBtn = document.getElementById(`${tabName}-file-upload`);
+            const fileName = document.getElementById(`${tabName}-file-input-name`);
             let currentFiles = [];
 
             fileInput.addEventListener('change', function() {
@@ -614,8 +563,9 @@
             });
 
             uploadBtn.addEventListener('click', async function() {
-                if (currentFiles.length === 0) { alert('Выберите хотя бы один PDF.'); return; }
-                addMessage(tabName, messagesId, 'user', `📄 Загружено файлов: ${currentFiles.map(f => f.name).join(', ')}`);
+                if (currentFiles.length === 0) { alert('Выберите файл(ы).'); return; }
+                const fileNames = currentFiles.map(f => f.name).join(', ');
+                addMessage(tabName, messagesId, 'user', `📄 Загружено файлов: ${fileNames}`);
                 const loadingMsg = '⏳ Анализирую файлы...';
                 addMessage(tabName, messagesId, 'ai', loadingMsg);
                 this.disabled = true;
@@ -636,14 +586,31 @@
                             }
                             combinedText += `\n--- Файл: ${file.name} ---\n${fullText}`;
                         } else {
-                            // если не PDF, читаем как текст
                             const text = await readFileContent(file);
                             combinedText += `\n--- Файл: ${file.name} ---\n${text}`;
                         }
                     }
                     if (!combinedText.trim()) throw new Error('Не удалось извлечь текст из файлов.');
-                    const prompt = `Проанализируй данные о конкурентах из следующих файлов. Выдели общие тренды, сильные и слабые стороны каждого, дай рекомендации по улучшению позиций.\n\n${combinedText.slice(0, 8000)}`;
-                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.competitors);
+
+                    // Формируем промпт в зависимости от чата
+                    let prompt = '';
+                    const prompts = {
+                        analytics: `Проанализируй отзывы из файлов. Выдели средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        improve: `Проанализируй описание товара из файлов и дай конкретные рекомендации по улучшению карточки (текст, фото, цена, состав, отзывы). Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        teach: `Проанализируй данные о конкурентах и ценах. Дай стратегии, как продавать этот товар дороже, используя ценностное позиционирование. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        competitors: `Проанализируй данные о конкурентах из файлов. Выдели сильные и слабые стороны каждого, дай рекомендации по улучшению позиций. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        replies: `Проанализируй отзывы из файлов. Для каждого отзыва предложи 3 варианта ответа (вежливый, официальный, дружелюбный). Ответ представь в виде таблицы.\n\n${combinedText.slice(0, 8000)}`,
+                        unit: `Проанализируй данные из файла (CSV) с колонками: цена, себестоимость, логистика, комиссия, реклама. Рассчитай прибыль и маржинальность для каждой строки, выведи средние значения и дай рекомендации.\n\n${combinedText.slice(0, 8000)}`,
+                        marketing: `Проанализируй описание товара и рынка из файлов. Предложи 5 идей для продвижения (акции, рекламные кампании, кросс-продажи) с бюджетом и ожидаемым эффектом. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        stock: `Проанализируй данные по продажам из файла (CSV/TXT). Сделай прогноз спроса на следующие 12 месяцев, учти сезонность и тренды. Предложи рекомендации по закупкам помесячно.\n\n${combinedText.slice(0, 8000)}`,
+                        naming: `Проанализируй описание товара. Сгенерируй 10 вариантов названий, 5 слоганов и 3 УТП с пояснениями. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
+                        niche: `Проанализируй требования к нише из файла. Определи топ-3 перспективные ниши на Wildberries, укажи их среднюю цену, конкуренцию и потенциал маржинальности. Дай рекомендации по входу.\n\n${combinedText.slice(0, 8000)}`,
+                        packaging: `Проанализируй характеристики товара. Дай рекомендации по упаковке: материалы, требования WB (габариты, вес, маркировка, амортизация), предупреди об ошибках и штрафах. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`
+                    };
+                    prompt = prompts[tabName] || `Проанализируй данные из файлов и дай полезные рекомендации.\n\n${combinedText.slice(0, 8000)}`;
+
+                    const systemPrompt = SYSTEM_PROMPTS[tabName] || SYSTEM_PROMPTS.analytics;
+                    const analysis = await callDeepSeek(prompt, systemPrompt);
                     const history = getChatHistory(tabName);
                     if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
                         history.pop();
@@ -666,59 +633,7 @@
             });
         }
 
-        // ====== ПРОГНОЗ ЗАПАСОВ (загрузка CSV/TXT) ======
-        if (tabName === 'stock') {
-            const fileInput = document.getElementById('stock-file-input');
-            const uploadBtn = document.getElementById('stock-file-upload');
-            const fileName = document.getElementById('stock-file-input-name');
-            let currentFile = null;
-
-            fileInput.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    currentFile = this.files[0];
-                    fileName.textContent = currentFile.name;
-                    uploadBtn.disabled = false;
-                } else {
-                    currentFile = null;
-                    fileName.textContent = 'файл не выбран';
-                    uploadBtn.disabled = true;
-                }
-            });
-
-            uploadBtn.addEventListener('click', async function() {
-                if (!currentFile) { alert('Выберите файл.'); return; }
-                addMessage(tabName, messagesId, 'user', `📄 Загружен файл: ${currentFile.name}`);
-                const loadingMsg = '⏳ Анализирую данные...';
-                addMessage(tabName, messagesId, 'ai', loadingMsg);
-                this.disabled = true;
-                try {
-                    const content = await readFileContent(currentFile);
-                    // если CSV, можно попробовать распарсить, но для простоты передаём весь текст AI
-                    const prompt = `Проанализируй данные по продажам из файла. Сделай прогноз спроса на следующие 12 месяцев, учитывая сезонность, тренды и предоставленные данные. Предложи рекомендации по закупкам.\n\nДанные:\n${content.slice(0, 8000)}`;
-                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.stock);
-                    const history = getChatHistory(tabName);
-                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                        history.pop();
-                        saveChatHistory(tabName, history);
-                    }
-                    addMessage(tabName, messagesId, 'ai', analysis, 'Анализ загруженного файла');
-                } catch (err) {
-                    const history = getChatHistory(tabName);
-                    if (history.length > 0 && history[history.length-1].role === 'ai' && history[history.length-1].content === loadingMsg) {
-                        history.pop();
-                        saveChatHistory(tabName, history);
-                    }
-                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                } finally {
-                    this.disabled = false;
-                    currentFile = null;
-                    fileName.textContent = 'файл не выбран';
-                    fileInput.value = '';
-                }
-            });
-        }
-
-        // ====== ЮНИТ-ЭКОНОМИКА (без AI) ======
+        // ====== ЮНИТ-ЭКОНОМИКА (ручной ввод тоже работает) ======
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -752,9 +667,6 @@
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); unitSend.click(); }
             });
         }
-
-        // ====== ОСТАЛЬНЫЕ ЧАТЫ (только текстовый AI) ======
-        // они уже используют общую отправку sendChatMessage
     }
 
     // ============================================================
@@ -880,7 +792,7 @@
     // ============================================================
     const SYSTEM_PROMPTS = {
         analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — анализировать отзывы покупателей и давать структурированные выводы: средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Отвечай на русском языке, используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---. Ответ должен быть полезным, практичным и понятным для селлера.`,
-        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. Твоя задача — давать конкретные, пошаговые рекомендации по улучшению карточки товара: текст, фото, цена, состав, работа с отзывами. Отвечай на русском языке, структурируй ответ (проблема → решение → почему это важно). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы. Ответ должен быть практичным и выполнимым.`,
+        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. Твоя задача — давать конкретные, пошаговые рекомендации по улучшению карточки товара: текст, фото, цена, состав, работа с отзывами. Отвечай на русском языке, структурируй ответ (проблема → решение → почему это важно). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
         teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. Твоя задача — помогать селлеру продавать дороже: анализировать ценовое позиционирование, конкурентов, давать стратегии упаковки ценностного предложения. Отвечай на русском языке, структурируй ответ (анализ → стратегии → конкретные шаги). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
         competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. Твоя задача — анализировать данные о конкурентах, выявлять их сильные и слабые стороны, давать рекомендации по улучшению позиций. Отвечай на русском языке, используй таблицы для сравнения, выделяй ключевые отличия. Ответ должен быть практичным.`,
         replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. Твоя задача — генерировать 3 варианта ответа на негативный или нейтральный отзыв: вежливый, официальный, дружелюбный. Отвечай на русском языке, представляй ответы в виде таблицы (стиль → текст). Также давай краткий анализ отзыва и рекомендации по улучшению коммуникации.`,
