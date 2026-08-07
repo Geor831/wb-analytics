@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        /* ===== ВСЕ СТИЛИ ИЗ ВАШЕГО ИСХОДНОГО ФАЙЛА (БЕЗ ИЗМЕНЕНИЙ) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -147,7 +146,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 17.0 (CORS-прокси)</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 17.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -186,130 +185,11 @@
 (function() {
     'use strict';
 
-    // ===== API-КЛЮЧ AITUNNEL (для DeepSeek) =====
     const API_KEY = "sk-aitunnel-mAZ89Pdr1elwujJMKcMQ7ChEsODz0OFk";
 
-    // ===== СИСТЕМНЫЕ ПРОМПТЫ (ПОЛНЫЕ) =====
-    const SYSTEM_PROMPTS = {
-        analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — анализировать отзывы покупателей и давать структурированные выводы: средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Отвечай на русском языке, используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---. Ответ должен быть полезным, практичным и понятным для селлера.`,
-        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. Твоя задача — давать конкретные, пошаговые рекомендации по улучшению карточки товара: текст, фото, цена, состав, работа с отзывами. Отвечай на русском языке, структурируй ответ (проблема → решение → почему это важно). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы. Ответ должен быть практичным и выполнимым.`,
-        teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. Твоя задача — помогать селлеру продавать дороже: анализировать ценовое позиционирование, конкурентов, давать стратегии упаковки ценностного предложения. Отвечай на русском языке, структурируй ответ (анализ → стратегии → конкретные шаги). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
-        competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. Твоя задача — сравнивать товары конкурентов по артикулам, выявлять их слабые места, давать рекомендации по улучшению позиций. Отвечай на русском языке, используй таблицы для сравнения цен, рейтингов, отзывов. Выделяй ключевые отличия. Ответ должен быть практичным.`,
-        replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. Твоя задача — генерировать 3 варианта ответа на негативный или нейтральный отзыв: вежливый, официальный, дружелюбный. Отвечай на русском языке, представляй ответы в виде таблицы (стиль → текст). Также давай краткий анализ отзыва и рекомендации по улучшению коммуникации.`,
-        marketing: `Ты — эксперт по маркетингу и продвижению на Wildberries. Твоя задача — предлагать идеи для продвижения товара: акции, рекламные кампании, кросс-продажи. Отвечай на русском языке, структурируй ответ (идея → описание → бюджет → ожидаемый эффект). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
-        stock: `Ты — эксперт по управлению запасами и прогнозированию спроса на Wildberries. Твоя задача — прогнозировать спрос на товар на основе отзывов, сезонности и общей ситуации. Дай рекомендации по закупкам помесячно. Отвечай на русском языке, структурируй ответ (прогноз → рекомендации → пояснения). Используй таблицы (месяц → прогноз → рекомендация).`,
-        naming: `Ты — эксперт по неймингу и копирайтингу для Wildberries. Твоя задача — генерировать названия, слоганы и УТП для товара. Отвечай на русском языке, структурируй ответ: 10 вариантов названий (коротких, запоминающихся), 5 слоганов, 3 УТП с пояснениями. Используй таблицы для группировки.`,
-        niche: `Ты — эксперт по поиску ниш и анализу рынка на Wildberries. Твоя задача — анализировать данные о товарах в определённой нише, определять её перспективность, конкуренцию, маржинальность. Отвечай на русском языке, структурируй ответ: топ-3 ниши, для каждой — средняя цена, конкуренция, потенциал, рекомендации. Используй таблицы.`,
-        packaging: `Ты — эксперт по упаковке для маркетплейсов. Твоя задача — консультировать по выбору материалов, требованиям Wildberries к упаковке (габариты, вес, маркировка, амортизация), предупреждать о типичных ошибках и штрафах. Отвечай на русском языке, структурируй ответ (разбор товара → требования → рекомендации → риски). Используй таблицы и списки.`,
-        suppliers: `Ты — эксперт по закупкам и поиску поставщиков для Wildberries. Твоя задача — помогать находить надёжных поставщиков товаров и упаковки: каналы поиска, чек-лист проверки, рекомендации по переговорам. Отвечай на русском языке, структурируй ответ (каналы → чек-лист → советы). Используй списки и таблицы.`
-    };
-
-    // ================================================================
-    // НОВЫЕ ФУНКЦИИ: ПРЯМОЙ ПАРСИНГ ЧЕРЕЗ CORS-ПРОКСИ
-    // ================================================================
-
-    // Генерация случайной задержки (чтобы выглядеть как человек)
-    function randomDelay(min = 300, max = 1000) {
-        return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
-    }
-
-    // Универсальный запрос через прокси
-    async function fetchWithProxy(url) {
-        const proxy = 'https://api.allorigins.win/raw?url=';
-        const fullUrl = proxy + encodeURIComponent(url);
-        const response = await fetch(fullUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
-    }
-
-    // Получение данных по артикулу
-    async function fetchProductData(article) {
-        await randomDelay();
-        const url = `https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`;
-        try {
-            const data = await fetchWithProxy(url);
-            if (!data.data?.products?.length) {
-                throw new Error('Товар не найден');
-            }
-            const product = data.data.products[0];
-            return {
-                product: {
-                    id: product.id,
-                    name: product.name || 'Неизвестно',
-                    price: product.sizes?.[0]?.price?.product / 100 || 0,
-                    rating: product.rating || 0,
-                    feedbacks: product.feedbacks || 0,
-                    brand: product.brand || '',
-                    seller: product.supplier || ''
-                },
-                competitors: []
-            };
-        } catch (error) {
-            console.error('Ошибка получения данных:', error);
-            throw new Error('Не удалось получить данные по артикулу. Проверьте артикул или попробуйте позже.');
-        }
-    }
-
-    // Поиск товаров для ниш
-    async function fetchWildberriesData(query) {
-        await randomDelay();
-        const url = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&dest=-1257786&spp=30&query=${encodeURIComponent(query)}&resultset=catalog&sort=popular&page=1`;
-        try {
-            const data = await fetchWithProxy(url);
-            const products = data.data?.products || [];
-            return products.slice(0, 20).map(p => ({
-                id: p.id,
-                name: p.name || '',
-                price: p.sizes?.[0]?.price?.product / 100 || 0,
-                rating: p.rating || 0,
-                feedbacks: p.feedbacks || 0,
-                brand: p.brand || '',
-                seller: p.supplier || ''
-            }));
-        } catch (error) {
-            console.error('Ошибка поиска:', error);
-            return null;
-        }
-    }
-
-    // ================================================================
-    // АНАЛИЗ ПО АРТИКУЛУ (использует новую функцию)
-    // ================================================================
-    async function analyzeByArticle(article) {
-        const articleStatus = document.getElementById('articleStatus');
-        if (articleStatus) {
-            articleStatus.textContent = '⏳ Получаю данные...';
-            articleStatus.style.color = '#2563eb';
-        }
-        try {
-            const data = await fetchProductData(article);
-            const product = data.product;
-            let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
-            msg += `📦 *Название:* ${product.name}\n`;
-            msg += `💰 *Цена:* ${product.price} ₽\n`;
-            msg += `⭐ *Рейтинг:* ${product.rating}\n`;
-            msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
-            if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
-            if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n`;
-            if (articleStatus) {
-                articleStatus.textContent = '✅ Анализ завершён!';
-                articleStatus.style.color = '#16a34a';
-            }
-            return msg;
-        } catch (error) {
-            if (articleStatus) {
-                articleStatus.textContent = `❌ Ошибка: ${error.message}`;
-                articleStatus.style.color = '#dc2626';
-            }
-            return null;
-        }
-    }
-
-    // ================================================================
-    // ВСЕ ОСТАЛЬНЫЕ ФУНКЦИИ (без изменений — взяты из вашего файла)
-    // ================================================================
-
-    // ---------- ПОЛЬЗОВАТЕЛЬ ----------
+    // ============================================================
+    // ПОЛЬЗОВАТЕЛЬ
+    // ============================================================
     const USERS_KEY = 'wb_users';
     const SESSION_KEY = 'wb_session';
 
@@ -334,7 +214,9 @@
         }
     }
 
-    // ---------- ПРОМОКОДЫ ----------
+    // ============================================================
+    // ПРОМОКОДЫ
+    // ============================================================
     function getPromoCodes() {
         try { return JSON.parse(localStorage.getItem('promoCodes')) || []; } catch { return []; }
     }
@@ -365,7 +247,9 @@
         };
     }
 
-    // ---------- СЧЁТЧИК ЗАПРОСОВ (5 в месяц) ----------
+    // ============================================================
+    // СЧЁТЧИК ЗАПРОСОВ (5 в месяц)
+    // ============================================================
     function getMonthlyRequestsKey() {
         const now = new Date();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -390,7 +274,9 @@
         return count < 5;
     }
 
-    // ---------- АДМИН-ПАНЕЛЬ ----------
+    // ============================================================
+    // АДМИН-ПАНЕЛЬ
+    // ============================================================
     const ADMIN_PASSWORD = 'wbadmin2025';
     const urlParams = new URLSearchParams(window.location.search);
     let adminMode = false;
@@ -403,7 +289,9 @@
         }
     }
 
-    // ---------- ХРАНЕНИЕ ИСТОРИИ ЧАТОВ ----------
+    // ============================================================
+    // ХРАНЕНИЕ ИСТОРИИ ЧАТОВ
+    // ============================================================
     function getHistoryKey(tabName) {
         return currentUser ? `chat_${currentUser}_${tabName}` : `chat_guest_${tabName}`;
     }
@@ -415,7 +303,9 @@
         localStorage.setItem(getHistoryKey(tabName), JSON.stringify(messages));
     }
 
-    // ---------- КОНФИГ ЧАТОВ ----------
+    // ============================================================
+    // КОНФИГ ЧАТОВ
+    // ============================================================
     const chatConfig = {
         analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF или введите артикул для анализа.' },
         improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Опишите товар или проблему с карточкой, и я дам чек-лист.' },
@@ -431,7 +321,56 @@
         suppliers: { name: 'Поиск поставщиков', icon: '🔗', welcome: '👋 Спросите про поставщиков.' }
     };
 
-    // ---------- ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ ----------
+    // ============================================================
+    // ФУНКЦИЯ ПРЯМОГО ПАРСИНГА (точные данные)
+    // ============================================================
+    async function fetchProductData(article) {
+        try {
+            // 1. Получаем данные о товаре
+            const detailUrl = `https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`;
+            const detailResp = await fetch(detailUrl);
+            if (!detailResp.ok) throw new Error('Не удалось получить данные о товаре');
+            const detailData = await detailResp.json();
+            const product = detailData.data?.products?.[0];
+            if (!product) throw new Error('Товар не найден');
+
+            // 2. Получаем конкурентов (поиск по названию)
+            const searchQuery = product.name.split('/')[0].trim();
+            const searchUrl = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&lang=ru&page=1&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&spp=30`;
+            const searchResp = await fetch(searchUrl);
+            if (!searchResp.ok) throw new Error('Не удалось найти конкурентов');
+            const searchData = await searchResp.json();
+            const competitors = (searchData.data?.products || []).slice(0, 5).map(p => ({
+                id: p.id,
+                name: p.name,
+                price: p.sizes?.[0]?.price?.product / 100 || 0,
+                rating: p.rating || 0,
+                feedbacks: p.feedbacks || 0,
+                brand: p.brand || '',
+                seller: p.supplier || ''
+            })).filter(c => c.id !== product.id);
+
+            return {
+                product: {
+                    id: product.id,
+                    name: product.name,
+                    price: product.sizes?.[0]?.price?.product / 100 || 0,
+                    rating: product.rating || 0,
+                    feedbacks: product.feedbacks || 0,
+                    brand: product.brand || '',
+                    seller: product.supplier || ''
+                },
+                competitors
+            };
+        } catch (e) {
+            console.error('Ошибка парсинга WB:', e);
+            throw e;
+        }
+    }
+
+    // ============================================================
+    // ФУНКЦИИ ОТОБРАЖЕНИЯ ЧАТОВ
+    // ============================================================
     function renderMessages(tabName, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -484,7 +423,9 @@
         addMessage(tabName, containerId, 'ai', welcome);
     }
 
-    // ---------- ОТРИСОВКА АКТИВНОГО ЧАТА ----------
+    // ============================================================
+    // ОТРИСОВКА АКТИВНОГО ЧАТА
+    // ============================================================
     function renderChatPanel(tabName) {
         if (tabName === 'profile') {
             renderProfile();
@@ -528,6 +469,18 @@
             `;
         }
 
+        if (tabName === 'stock') {
+            html += `
+                <div class="article-input-area">
+                    <div class="row">
+                        <input type="text" id="stockInput" placeholder="Введите артикул для прогноза запасов">
+                        <button class="btn" id="stockAnalyzeBtn">Прогнозировать</button>
+                    </div>
+                    <div class="status" id="stockStatus"></div>
+                </div>
+            `;
+        }
+
         const examplesMap = {
             analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
             improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
@@ -560,7 +513,9 @@
         initChat(tabName);
     }
 
-    // ---------- ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА ----------
+    // ============================================================
+    // ИНИЦИАЛИЗАЦИЯ КОНКРЕТНОГО ЧАТА
+    // ============================================================
     function initChat(tabName) {
         const input = document.getElementById(`${tabName}-input`);
         const sendBtn = document.getElementById(`${tabName}-send`);
@@ -612,8 +567,9 @@
             }
         });
 
-        // ====== ЛОГИКА ДЛЯ АНАЛИТИКИ (PDF + артикул) ======
+        // ====== АНАЛИТИКА (PDF + артикул) ======
         if (tabName === 'analytics') {
+            // PDF обработка (оставляем как есть)
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
             const fileName = document.getElementById('analytics-file-name');
@@ -673,7 +629,7 @@
                 }
             });
 
-            // ----- АРТИКУЛ (через прямой парсинг) -----
+            // Артикул (прямой парсинг)
             const articleInput = document.getElementById('articleInput');
             const articleBtn = document.getElementById('articleAnalyzeBtn');
             const articleStatus = document.getElementById('articleStatus');
@@ -682,16 +638,164 @@
                 const article = articleInput.value.trim();
                 if (!article) { alert('Введите артикул.'); return; }
                 if (!/^\d+$/.test(article)) { alert('Артикул должен состоять только из цифр.'); return; }
-                const result = await analyzeByArticle(article);
-                if (result) {
+                articleStatus.textContent = '⏳ Получаю данные...';
+                articleStatus.style.color = '#2563eb';
+                try {
+                    const data = await fetchProductData(article);
+                    const product = data.product;
+                    const comps = data.competitors;
+                    let msg = `📊 *Анализ товара (арт. ${product.id})*\n\n`;
+                    msg += `📦 *Название:* ${product.name}\n`;
+                    msg += `💰 *Цена:* ${product.price} ₽\n`;
+                    msg += `⭐ *Рейтинг:* ${product.rating}\n`;
+                    msg += `💬 *Отзывов:* ${product.feedbacks}\n`;
+                    if (product.brand) msg += `🏷️ *Бренд:* ${product.brand}\n`;
+                    if (product.seller) msg += `🏢 *Продавец:* ${product.seller}\n`;
+                    if (comps.length > 0) {
+                        msg += '\n🏆 *Конкуренты:*\n';
+                        comps.forEach(c => {
+                            msg += `- ${c.name} (${c.price} ₽, ⭐${c.rating})\n`;
+                        });
+                    }
                     addMessage(tabName, messagesId, 'user', `🔍 Анализ артикула: ${article}`);
-                    addMessage(tabName, messagesId, 'ai', result);
+                    addMessage(tabName, messagesId, 'ai', msg, 'Данные с Wildberries');
                     articleInput.value = '';
+                    articleStatus.textContent = '✅ Готово!';
+                    articleStatus.style.color = '#16a34a';
+                } catch (err) {
+                    articleStatus.textContent = `❌ ${err.message}`;
+                    articleStatus.style.color = '#dc2626';
                 }
             });
 
             articleInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); articleBtn.click(); }
+            });
+        }
+
+        // ====== ПРОГНОЗ ЗАПАСОВ (с реальными данными) ======
+        if (tabName === 'stock') {
+            const stockInput = document.getElementById('stockInput');
+            const stockBtn = document.getElementById('stockAnalyzeBtn');
+            const stockStatus = document.getElementById('stockStatus');
+
+            stockBtn.addEventListener('click', async function() {
+                const article = stockInput.value.trim();
+                if (!article) { alert('Введите артикул.'); return; }
+                if (!/^\d+$/.test(article)) { alert('Артикул должен состоять только из цифр.'); return; }
+                stockStatus.textContent = '⏳ Получаю данные...';
+                stockStatus.style.color = '#2563eb';
+                try {
+                    const data = await fetchProductData(article);
+                    const product = data.product;
+                    // Формируем запрос AI на основе реальных данных
+                    const prompt = `На основе реальных данных товара с Wildberries:\n- Артикул: ${product.id}\n- Название: ${product.name}\n- Цена: ${product.price} ₽\n- Рейтинг: ${product.rating}\n- Количество отзывов: ${product.feedbacks}\n- Бренд: ${product.brand}\n- Продавец: ${product.seller}\n\nСоставь прогноз спроса на 12 месяцев (по месяцам) с рекомендациями по закупкам. Учти сезонность и текущие показатели. Ответ представь в виде таблицы (месяц → прогноз → рекомендация) и пояснений.`;
+                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.stock);
+                    addMessage(tabName, messagesId, 'user', `📦 Прогноз для артикула ${article}`);
+                    addMessage(tabName, messagesId, 'ai', analysis, 'Прогноз на основе данных Wildberries');
+                    stockInput.value = '';
+                    stockStatus.textContent = '✅ Готово!';
+                    stockStatus.style.color = '#16a34a';
+                } catch (err) {
+                    stockStatus.textContent = `❌ ${err.message}`;
+                    stockStatus.style.color = '#dc2626';
+                }
+            });
+
+            stockInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); stockBtn.click(); }
+            });
+        }
+
+        // ====== ПОИСК НИШ (с реальными данными) ======
+        if (tabName === 'niche') {
+            const nicheInput = document.getElementById('niche-input');
+            const nicheSend = document.getElementById('niche-send');
+
+            nicheSend.addEventListener('click', async function() {
+                const text = nicheInput.value.trim();
+                if (!text) return;
+                nicheSend.disabled = true;
+                nicheInput.disabled = true;
+
+                addMessage(tabName, messagesId, 'user', text);
+                nicheInput.value = '';
+
+                const typingId = 'typing_' + Date.now();
+                const history = getChatHistory(tabName);
+                history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
+                saveChatHistory(tabName, history);
+                renderMessages(tabName, messagesId);
+
+                try {
+                    let searchQuery = text;
+                    const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
+                    let words = text.split(/\s+/);
+                    let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
+                    if (filtered.length > 0) searchQuery = filtered.join(' ');
+
+                    // Прямой парсинг поиска
+                    const searchUrl = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&lang=ru&page=1&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&spp=30`;
+                    const resp = await fetch(searchUrl);
+                    if (!resp.ok) throw new Error('Не удалось выполнить поиск');
+                    const searchData = await resp.json();
+                    const products = (searchData.data?.products || []).slice(0, 20).map(p => ({
+                        name: p.name,
+                        price: p.sizes?.[0]?.price?.product / 100 || 0,
+                        rating: p.rating || 0,
+                        feedbacks: p.feedbacks || 0,
+                        brand: p.brand || '',
+                        seller: p.supplier || ''
+                    }));
+
+                    if (products.length === 0) {
+                        const newHistory = getChatHistory(tabName);
+                        const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                        saveChatHistory(tabName, filtered2);
+                        renderMessages(tabName, messagesId);
+                        addMessage(tabName, messagesId, 'ai',
+                            `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"`,
+                            'Данные с Wildberries'
+                        );
+                        return;
+                    }
+
+                    const dataStr = JSON.stringify(products, null, 2);
+                    const prompt = `Пользователь ищет нишу: "${text}".
+                    Вот реальные данные с Wildberries по запросу (первые 20 товаров):
+                    ${dataStr}
+
+                    Проанализируй эти данные и дай рекомендацию:
+                    1. Топ-3 ниши (или категории) на основе этих данных.
+                    2. Для каждой ниши укажи: среднюю цену, конкуренцию (оцени по количеству продавцов и отзывов), потенциал маржинальности.
+                    3. Дай краткие рекомендации, стоит ли входить в эту нишу и с чего начать.
+                    4. Если данных недостаточно, укажи, какие ещё данные нужны.
+
+                    Ответ структурируй: заголовки ###, списки, таблицы.`;
+                    const aiResponse = await callDeepSeek(prompt, SYSTEM_PROMPTS.niche);
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
+                } catch (err) {
+                    const newHistory = getChatHistory(tabName);
+                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
+                    saveChatHistory(tabName, filtered2);
+                    renderMessages(tabName, messagesId);
+                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+                } finally {
+                    nicheSend.disabled = false;
+                    nicheInput.disabled = false;
+                    nicheInput.focus();
+                }
+            });
+
+            nicheInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    nicheSend.click();
+                }
             });
         }
 
@@ -729,89 +833,11 @@
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); unitSend.click(); }
             });
         }
-
-        // ====== ПОИСК НИШ (с AI и новой функцией) ======
-        if (tabName === 'niche') {
-            const nicheInput = document.getElementById('niche-input');
-            const nicheSend = document.getElementById('niche-send');
-
-            nicheSend.addEventListener('click', async function() {
-                const text = nicheInput.value.trim();
-                if (!text) return;
-                nicheSend.disabled = true;
-                nicheInput.disabled = true;
-
-                addMessage(tabName, messagesId, 'user', text);
-                nicheInput.value = '';
-
-                const typingId = 'typing_' + Date.now();
-                const history = getChatHistory(tabName);
-                history.push({ role: 'ai', content: '⏳ <span>.</span><span>.</span><span>.</span>', isTyping: true, id: typingId });
-                saveChatHistory(tabName, history);
-                renderMessages(tabName, messagesId);
-
-                try {
-                    let searchQuery = text;
-                    const stopWords = ['найди', 'нишу', 'проанализируй', 'анализ', 'ниша', 'поиск', 'какие', 'что', 'с', 'до', 'свыше', 'более', 'менее', 'руб', 'р', 'маржой', 'маржинальность', 'конкуренция', 'тренды', 'растут', 'сейчас', 'новичку', 'продавать', 'вход'];
-                    let words = text.split(/\s+/);
-                    let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
-                    if (filtered.length > 0) searchQuery = filtered.join(' ');
-
-                    const rawData = await fetchWildberriesData(searchQuery);
-                    if (!rawData || rawData.length === 0) {
-                        const newHistory = getChatHistory(tabName);
-                        const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                        saveChatHistory(tabName, filtered2);
-                        renderMessages(tabName, messagesId);
-                        addMessage(tabName, messagesId, 'ai',
-                            `❌ По вашему запросу не найдено товаров.\n\n💡 Попробуйте ввести **конкретную категорию или название товара**, например:\n• "кокосовые сливки"\n• "органайзеры для дома"\n• "фитнес-резинки"\n\nПосле этого я проанализирую данные и дам рекомендации по нише.`,
-                            'Данные с Wildberries'
-                        );
-                        return;
-                    }
-
-                    const dataStr = JSON.stringify(rawData.slice(0, 15), null, 2);
-                    const prompt = `Пользователь ищет нишу: "${text}".
-                    Вот данные с Wildberries по запросу (первые 15 товаров):
-                    ${dataStr}
-
-                    Проанализируй эти данные и дай рекомендацию:
-                    1. Топ-3 ниши (или категории) на основе этих данных.
-                    2. Для каждой ниши укажи: среднюю цену, конкуренцию (оцени по количеству продавцов и отзывов), потенциал маржинальности (оцени).
-                    3. Дай краткие рекомендации, стоит ли входить в эту нишу и с чего начать.
-                    4. Если данных недостаточно, укажи, какие ещё данные нужны.
-
-                    Ответ структурируй: заголовки ###, списки, таблицы.`;
-
-                    const aiResponse = await callDeepSeek(prompt, SYSTEM_PROMPTS.niche);
-                    const newHistory = getChatHistory(tabName);
-                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                    saveChatHistory(tabName, filtered2);
-                    renderMessages(tabName, messagesId);
-                    addMessage(tabName, messagesId, 'ai', aiResponse, 'Данные с Wildberries и AI-анализ');
-                } catch (err) {
-                    const newHistory = getChatHistory(tabName);
-                    const filtered2 = newHistory.filter(msg => msg.id !== typingId);
-                    saveChatHistory(tabName, filtered2);
-                    renderMessages(tabName, messagesId);
-                    addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
-                } finally {
-                    nicheSend.disabled = false;
-                    nicheInput.disabled = false;
-                    nicheInput.focus();
-                }
-            });
-
-            nicheInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    nicheSend.click();
-                }
-            });
-        }
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО ИСТОРИИ ----------
+    // ============================================================
+    // МОДАЛЬНОЕ ОКНО ИСТОРИИ
+    // ============================================================
     function showHistoryModal(tabName) {
         const modal = document.getElementById('historyModal');
         const listContainer = document.getElementById('historyList');
@@ -927,7 +953,26 @@
         searchInput.focus();
     }
 
-    // ---------- ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ ----------
+    // ============================================================
+    // СИСТЕМНЫЕ ПРОМПТЫ (полные)
+    // ============================================================
+    const SYSTEM_PROMPTS = {
+        analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — анализировать отзывы покупателей и давать структурированные выводы: средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Отвечай на русском языке, используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---. Ответ должен быть полезным, практичным и понятным для селлера.`,
+        improve: `Ты — эксперт по улучшению карточек товаров на Wildberries. Твоя задача — давать конкретные, пошаговые рекомендации по улучшению карточки товара: текст, фото, цена, состав, работа с отзывами. Отвечай на русском языке, структурируй ответ (проблема → решение → почему это важно). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы. Ответ должен быть практичным и выполнимым.`,
+        teach: `Ты — эксперт по ценообразованию и стратегиям продаж на Wildberries. Твоя задача — помогать селлеру продавать дороже: анализировать ценовое позиционирование, конкурентов, давать стратегии упаковки ценностного предложения. Отвечай на русском языке, структурируй ответ (анализ → стратегии → конкретные шаги). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
+        competitors: `Ты — эксперт по конкурентной аналитике на Wildberries. Твоя задача — сравнивать товары конкурентов по артикулам, выявлять их слабые места, давать рекомендации по улучшению позиций. Отвечай на русском языке, используй таблицы для сравнения цен, рейтингов, отзывов. Выделяй ключевые отличия. Ответ должен быть практичным.`,
+        replies: `Ты — эксперт по работе с клиентами и отзывами на Wildberries. Твоя задача — генерировать 3 варианта ответа на негативный или нейтральный отзыв: вежливый, официальный, дружелюбный. Отвечай на русском языке, представляй ответы в виде таблицы (стиль → текст). Также давай краткий анализ отзыва и рекомендации по улучшению коммуникации.`,
+        marketing: `Ты — эксперт по маркетингу и продвижению на Wildberries. Твоя задача — предлагать идеи для продвижения товара: акции, рекламные кампании, кросс-продажи. Отвечай на русском языке, структурируй ответ (идея → описание → бюджет → ожидаемый эффект). Используй заголовки ###, списки с -, жирный текст **текст**. Если уместно, используй таблицы.`,
+        stock: `Ты — эксперт по управлению запасами и прогнозированию спроса на Wildberries. Твоя задача — прогнозировать спрос на товар на основе отзывов, сезонности и общей ситуации. Дай рекомендации по закупкам помесячно. Отвечай на русском языке, структурируй ответ (прогноз → рекомендации → пояснения). Используй таблицы (месяц → прогноз → рекомендация).`,
+        naming: `Ты — эксперт по неймингу и копирайтингу для Wildberries. Твоя задача — генерировать названия, слоганы и УТП для товара. Отвечай на русском языке, структурируй ответ: 10 вариантов названий (коротких, запоминающихся), 5 слоганов, 3 УТП с пояснениями. Используй таблицы для группировки.`,
+        niche: `Ты — эксперт по поиску ниш и анализу рынка на Wildberries. Твоя задача — анализировать данные о товарах в определённой нише, определять её перспективность, конкуренцию, маржинальность. Отвечай на русском языке, структурируй ответ: топ-3 ниши, для каждой — средняя цена, конкуренция, потенциал, рекомендации. Используй таблицы.`,
+        packaging: `Ты — эксперт по упаковке для маркетплейсов. Твоя задача — консультировать по выбору материалов, требованиям Wildberries к упаковке (габариты, вес, маркировка, амортизация), предупреждать о типичных ошибках и штрафах. Отвечай на русском языке, структурируй ответ (разбор товара → требования → рекомендации → риски). Используй таблицы и списки.`,
+        suppliers: `Ты — эксперт по закупкам и поиску поставщиков для Wildberries. Твоя задача — помогать находить надёжных поставщиков товаров и упаковки: каналы поиска, чек-лист проверки, рекомендации по переговорам. Отвечай на русском языке, структурируй ответ (каналы → чек-лист → советы). Используй списки и таблицы.`
+    };
+
+    // ============================================================
+    // ОБЩАЯ ФУНКЦИЯ ОТПРАВКИ
+    // ============================================================
     async function sendChatMessage(tabName) {
         const input = document.getElementById(`${tabName}-input`);
         const sendBtn = document.getElementById(`${tabName}-send`);
@@ -962,9 +1007,7 @@
                 competitors: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с таблицей сравнения конкурентов, их слабыми местами и рекомендациями.`,
                 replies: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с анализом отзыва и 3 вариантами ответа (вежливый, официальный, дружелюбный).`,
                 marketing: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с анализом аудитории, 5 идеями продвижения с бюджетом и оценкой эффективности.`,
-                stock: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с прогнозом спроса по месяцам, таблицей и рекомендациями по закупкам.`,
                 naming: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с 10 вариантами названий, 5 слоганами и 3 УТП с пояснениями.`,
-                niche: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с анализом трендов, топ-3 нишами с таблицей и рекомендациями по входу.`,
                 packaging: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с разбором товара, требованиями WB, таблицей материалов, пошаговой инструкцией и рисками.`,
                 suppliers: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с каналами поиска, чек-листом проверки и рекомендациями по переговорам.`
             };
@@ -992,7 +1035,9 @@
         }
     }
 
-    // ---------- AI ВЫЗОВ ----------
+    // ============================================================
+    // AI ВЫЗОВ
+    // ============================================================
     async function callDeepSeek(prompt, systemPrompt) {
         const url = "https://api.aitunnel.ru/v1/chat/completions";
         const headers = { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" };
@@ -1011,7 +1056,9 @@
         return data.choices[0].message.content;
     }
 
-    // ---------- ФОРМАТИРОВАНИЕ ОТВЕТА (таблицы и списки) ----------
+    // ============================================================
+    // ФОРМАТИРОВАНИЕ ОТВЕТА
+    // ============================================================
     function convertMarkdownTables(text) {
         const lines = text.split('\n');
         let result = [], i = 0;
@@ -1081,7 +1128,9 @@
         return html;
     }
 
-    // ---------- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ ----------
+    // ============================================================
+    // ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ЧАТАМИ
+    // ============================================================
     function switchChat(tabName) {
         document.querySelectorAll('.sidebar-item').forEach(el => {
             el.classList.toggle('active', el.dataset.tab === tabName);
@@ -1089,7 +1138,9 @@
         renderChatPanel(tabName);
     }
 
-    // ---------- ПРОФИЛЬ ----------
+    // ============================================================
+    // ПРОФИЛЬ
+    // ============================================================
     function renderProfile() {
         const panel = document.getElementById('chatPanel');
         if (!currentUser) {
@@ -1231,7 +1282,9 @@
         });
     }
 
-    // ---------- ТАРИФЫ ----------
+    // ============================================================
+    // ТАРИФЫ
+    // ============================================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
         let html = `
@@ -1302,7 +1355,9 @@
         });
     }
 
-    // ---------- AUTH BAR (отображение в шапке) ----------
+    // ============================================================
+    // AUTH BAR
+    // ============================================================
     function renderAuthBar() {
         const bar = document.getElementById('authBar');
         if (currentUser) {
@@ -1333,7 +1388,9 @@
         }
     }
 
-    // ---------- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ ----------
+    // ============================================================
+    // МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
+    // ============================================================
     const modal = document.getElementById('authModal');
     const modalTitle = document.getElementById('authModalTitle');
     const authForm = document.getElementById('authForm');
@@ -1394,7 +1451,9 @@
         }
     });
 
-    // ---------- АДМИН-ПАНЕЛЬ ----------
+    // ============================================================
+    // АДМИН-ПАНЕЛЬ
+    // ============================================================
     if (adminMode) {
         const panel = document.createElement('div');
         panel.className = 'admin-panel';
@@ -1453,7 +1512,9 @@
         renderPromoList();
     }
 
-    // ---------- ЗАПУСК ----------
+    // ============================================================
+    // ЗАПУСК
+    // ============================================================
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.addEventListener('click', function() {
             const tab = this.dataset.tab;
