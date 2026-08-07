@@ -103,6 +103,8 @@
         .profile-form .status.success { color: #16a34a; }
         .profile-form .status.error { color: #dc2626; }
 
+        .btn-analyze-article { background: #10b981 !important; }
+
         @media (max-width: 700px) {
             .sidebar { width: 100%; max-height: 160px; border-right: none; border-bottom: 1px solid #e2e8f0; }
             .main-layout { flex-direction: column; }
@@ -143,7 +145,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 22.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 23.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -304,7 +306,7 @@
     // КОНФИГ ЧАТОВ
     // ============================================================
     const chatConfig = {
-        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF-файл с отзывами для анализа.' },
+        analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF-файл с отзывами или введите артикул для анализа.' },
         improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Загрузите файл с описанием товара или проблемой.' },
         teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Загрузите файл с ценами конкурентов или описанием рынка.' },
         competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Загрузите PDF-файлы с отзывами конкурентов.' },
@@ -390,6 +392,30 @@
     }
 
     // ============================================================
+    // АНАЛИЗ ПО АРТИКУЛУ (ВЫЗОВ API)
+    // ============================================================
+    async function analyzeByArticle(tabName, article) {
+        const messagesId = `${tabName}-messages`;
+        addMessage(tabName, messagesId, 'user', `🔍 Анализирую артикул ${article}...`);
+        try {
+            const response = await fetch('/api/analyze-article', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ article })
+            });
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(err);
+            }
+            const data = await response.json();
+            const msg = `📦 Товар: ${data.name}\n💰 Цена: ${data.price} ₽\n⭐ Рейтинг: ${data.rating}\n💬 Отзывов: ${data.feedbacks}\n🏷️ Продавец: ${data.seller}`;
+            addMessage(tabName, messagesId, 'ai', msg, 'Данные с Wildberries (Apify)');
+        } catch (err) {
+            addMessage(tabName, messagesId, 'ai', `❌ Ошибка: ${err.message}`);
+        }
+    }
+
+    // ============================================================
     // ОТРИСОВКА АКТИВНОГО ЧАТА
     // ============================================================
     function renderChatPanel(tabName) {
@@ -416,6 +442,16 @@
             </div>
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
+
+        // Для аналитики добавляем кнопку "Анализировать по артикулу"
+        if (tabName === 'analytics') {
+            html += `
+                <div style="margin: 8px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-analyze-article" id="analyze-article-btn">🔍 Анализировать по артикулу</button>
+                    <span style="font-size:13px; color:#64748b; align-self:center;">Введите артикул в поле ниже</span>
+                </div>
+            `;
+        }
 
         const fileUploadTabs = ['analytics', 'improve', 'teach', 'competitors', 'replies', 'unit', 'marketing', 'stock', 'naming', 'niche', 'packaging'];
         if (fileUploadTabs.includes(tabName)) {
@@ -526,13 +562,40 @@
             });
         }
 
+        // Обработка кнопки "Анализировать по артикулу" (только для аналитики)
+        if (tabName === 'analytics') {
+            const articleBtn = document.getElementById('analyze-article-btn');
+            if (articleBtn) {
+                articleBtn.addEventListener('click', function() {
+                    const article = prompt('Введите артикул товара (цифры):');
+                    if (!article || !/^\d+$/.test(article)) {
+                        alert('Введите корректный артикул (только цифры).');
+                        return;
+                    }
+                    analyzeByArticle(tabName, article);
+                });
+            }
+        }
+
+        // Основная отправка сообщения (с проверкой на артикул)
         sendBtn.addEventListener('click', function() {
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Если введены только цифры — это артикул, вызываем API
+            if (/^\d+$/.test(text)) {
+                analyzeByArticle(tabName, text);
+                input.value = '';
+                return;
+            }
+
+            // Иначе — обычный AI-чат
             sendChatMessage(tabName);
         });
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendChatMessage(tabName);
+                sendBtn.click();
             }
         });
 
@@ -1110,7 +1173,7 @@
     }
 
     // ============================================================
-    // ТАРИФЫ (с многоразовыми ссылками на оплату)
+    // ТАРИФЫ
     // ============================================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
