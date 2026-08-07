@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
-        /* === Все стили без изменений === */
+        /* === Все стили === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -143,7 +143,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 20.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 21.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -305,13 +305,13 @@
     // ============================================================
     const chatConfig = {
         analytics: { name: 'Аналитика товара', icon: '📊', welcome: '👋 Загрузите PDF-файл с отзывами для анализа.' },
-        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Загрузите файл с описанием товара или проблемой, я дам рекомендации.' },
+        improve: { name: 'Улучшить карточку', icon: '🔧', welcome: '👋 Загрузите файл с описанием товара или проблемой.' },
         teach: { name: 'Продавать дороже', icon: '🎓', welcome: '👋 Загрузите файл с ценами конкурентов или описанием рынка.' },
-        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Загрузите PDF-файлы с отзывами конкурентов (или один файл с данными).' },
+        competitors: { name: 'Конкуренты', icon: '🏆', welcome: '👋 Загрузите PDF-файлы с отзывами конкурентов.' },
         replies: { name: 'Ответы на отзывы', icon: '✍️', welcome: '👋 Загрузите файл с отзывами (CSV/TXT) или вставьте отзыв вручную.' },
-        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел через запятую или загрузите CSV с колонками: цена, себестоимость, логистика, комиссия, реклама.' },
+        unit: { name: 'Экономика товара', icon: '📈', welcome: '👋 Введите 5 чисел через запятую или загрузите CSV.' },
         marketing: { name: 'Идеи продвижения', icon: '💡', welcome: '👋 Загрузите файл с описанием товара или рынка.' },
-        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Загрузите CSV/TXT с историей продаж для прогноза.' },
+        stock: { name: 'Прогноз запасов', icon: '📦', welcome: '👋 Загрузите CSV/TXT с историей продаж.' },
         naming: { name: 'Названия и слоганы', icon: '🎯', welcome: '👋 Загрузите файл с описанием товара.' },
         niche: { name: 'Поиск ниш', icon: '🔍', welcome: '👋 Загрузите файл с требованиями к нише или опишите текстом.' },
         packaging: { name: 'Упаковка товара', icon: '📦', welcome: '👋 Загрузите файл с характеристиками товара.' },
@@ -417,7 +417,6 @@
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
 
-        // Добавляем загрузку файлов для большинства чатов (кроме suppliers)
         const fileUploadTabs = ['analytics', 'improve', 'teach', 'competitors', 'replies', 'unit', 'marketing', 'stock', 'naming', 'niche', 'packaging'];
         if (fileUploadTabs.includes(tabName)) {
             const accept = tabName === 'analytics' ? '.pdf' :
@@ -451,7 +450,6 @@
             `;
         }
 
-        // Примеры для всех чатов
         const examplesMap = {
             analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
             improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
@@ -492,7 +490,6 @@
         const sendBtn = document.getElementById(`${tabName}-send`);
         const messagesId = `${tabName}-messages`;
 
-        // Проверяем историю
         const history = getChatHistory(tabName);
         if (history.length === 0) {
             const welcome = chatConfig[tabName]?.welcome || '👋 Новый чат. Задайте вопрос.';
@@ -501,7 +498,6 @@
             renderMessages(tabName, messagesId);
         }
 
-        // Обработка примеров (чипов)
         const examples = document.querySelectorAll(`#${tabName}-examples .chip`);
         examples.forEach(chip => {
             chip.addEventListener('click', function() {
@@ -514,7 +510,6 @@
             });
         });
 
-        // Кнопки "Новый чат" и "История"
         const newChatBtn = document.getElementById(`newchat-${tabName}`);
         if (newChatBtn) {
             newChatBtn.addEventListener('click', function() {
@@ -531,7 +526,6 @@
             });
         }
 
-        // Основная отправка текстовых сообщений
         sendBtn.addEventListener('click', function() {
             sendChatMessage(tabName);
         });
@@ -542,7 +536,7 @@
             }
         });
 
-        // ====== ОБРАБОТКА ЗАГРУЗКИ ФАЙЛОВ ДЛЯ ВСЕХ ЧАТОВ, КРОМЕ SUPPLIERS ======
+        // Обработка загрузки файлов
         const fileUploadTabs = ['analytics', 'improve', 'teach', 'competitors', 'replies', 'unit', 'marketing', 'stock', 'naming', 'niche', 'packaging'];
         if (fileUploadTabs.includes(tabName)) {
             const fileInput = document.getElementById(`${tabName}-file-input`);
@@ -592,7 +586,6 @@
                     }
                     if (!combinedText.trim()) throw new Error('Не удалось извлечь текст из файлов.');
 
-                    // Формируем промпт в зависимости от чата
                     let prompt = '';
                     const prompts = {
                         analytics: `Проанализируй отзывы из файлов. Выдели средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Ответ структурируй.\n\n${combinedText.slice(0, 8000)}`,
@@ -633,7 +626,7 @@
             });
         }
 
-        // ====== ЮНИТ-ЭКОНОМИКА (ручной ввод тоже работает) ======
+        // Юнит-экономика (ручной ввод)
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -1117,7 +1110,7 @@
     }
 
     // ============================================================
-    // ТАРИФЫ
+    // ТАРИФЫ И ОПЛАТА (ОБНОВЛЁННАЯ ВЕРСИЯ С КНОПКАМИ)
     // ============================================================
     function renderTariffs() {
         const panel = document.getElementById('chatPanel');
@@ -1165,29 +1158,44 @@
                     </tbody>
                 </table>
 
-                <div class="payment-info">
-                    <h4 style="margin-bottom: 8px;">💳 Как оплатить</h4>
-                    <p><span class="label">СБП:</span> перевод на номер телефона <strong>+7 902 881 97 11</strong> (получатель: Соловьева Евгения Ивановна).</p>
-                    <p><span class="label">Банковская карта:</span> <strong>2202 2005 2302 6878</strong> (Сбербанк).</p>
-                    <p><span class="label">Комментарий к переводу:</span> укажите ваш <strong>логин</strong> и желаемый тариф (Старт, Про или Бизнес).</p>
-                    <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите нам на почту <strong>wbanalytics5@gmail.com</strong> с подтверждением, и мы активируем тариф в течение 24 часов.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;">
+                    <button class="btn" onclick="pay(490, 'Старт')">Оплатить 490 ₽</button>
+                    <button class="btn" onclick="pay(990, 'Про')">Оплатить 990 ₽</button>
+                    <button class="btn" onclick="pay(2490, 'Бизнес')">Оплатить 2 490 ₽</button>
                 </div>
 
-                <div style="margin: 20px 0;">
-                    <button class="btn" id="tariffPayBtn" style="width: auto;">💰 Оплатить сейчас</button>
-                    <span id="tariffPayStatus" style="margin-left: 16px; font-size: 14px; color: #64748b;"></span>
+                <div class="payment-info">
+                    <h4 style="margin-bottom: 8px;">💳 Как оплатить вручную</h4>
+                    <p><span class="label">СБП:</span> перевод на номер телефона <strong>+7 902 881 97 11</strong> (получатель: Соловьева Евгения Ивановна).</p>
+                    <p><span class="label">Банковская карта:</span> <strong>2202 2005 2302 6878</strong> (Сбербанк).</p>
+                    <p><span class="label">Комментарий:</span> укажите ваш <strong>логин</strong> и тариф.</p>
+                    <p style="margin-top: 8px; color: #64748b; font-size: 13px;">После оплаты напишите на <strong>wbanalytics5@gmail.com</strong> с подтверждением.</p>
                 </div>
             </div>
         `;
 
         panel.innerHTML = html;
-
-        document.getElementById('tariffPayBtn').addEventListener('click', function() {
-            const status = document.getElementById('tariffPayStatus');
-            status.textContent = '💳 Для оплаты переведите деньги по указанным реквизитам. После перевода напишите на wbanalytics5@gmail.com.';
-            status.style.color = '#2563eb';
-        });
     }
+
+    // Функция оплаты (глобальная)
+    window.pay = async function(amount, tariff) {
+        try {
+            const response = await fetch('https://ваш-сервер.ru/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, tariff })
+            });
+            const data = await response.json();
+            if (data.confirmation_url) {
+                window.location.href = data.confirmation_url;
+            } else {
+                alert('Ошибка при создании платежа: ' + (data.detail || ''));
+            }
+        } catch (err) {
+            alert('Не удалось соединиться с сервером оплаты. Попробуйте позже.');
+            console.error(err);
+        }
+    };
 
     // ============================================================
     // AUTH BAR
