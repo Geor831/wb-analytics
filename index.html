@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WB.Analytics — 12 чатов</title>
     <style>
+        /* === Стили (без изменений, как в вашем файле) === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
         .container { max-width: 1300px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.06); display: flex; flex-direction: column; height: 95vh; max-height: 1000px; overflow: hidden; }
@@ -146,7 +147,7 @@
         <div class="chat-panel" id="chatPanel"></div>
     </div>
 
-    <div class="footer">Бесплатный инструмент для селлеров. Версия 17.0</div>
+    <div class="footer">Бесплатный инструмент для селлеров. Версия 18.0</div>
 </div>
 
 <!-- Модальные окна -->
@@ -326,7 +327,6 @@
     // ============================================================
     async function fetchProductData(article) {
         try {
-            // 1. Получаем данные о товаре
             const detailUrl = `https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&spp=30&nm=${article}`;
             const detailResp = await fetch(detailUrl);
             if (!detailResp.ok) throw new Error('Не удалось получить данные о товаре');
@@ -334,7 +334,6 @@
             const product = detailData.data?.products?.[0];
             if (!product) throw new Error('Товар не найден');
 
-            // 2. Получаем конкурентов (поиск по названию)
             const searchQuery = product.name.split('/')[0].trim();
             const searchUrl = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&lang=ru&page=1&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&spp=30`;
             const searchResp = await fetch(searchUrl);
@@ -451,6 +450,7 @@
             <div class="chat-messages" id="${tabName}-messages"></div>
         `;
 
+        // Добавляем поля для артикулов в аналитику, конкурентов, прогноз запасов
         if (tabName === 'analytics') {
             html += `
                 <div class="file-upload-area">
@@ -465,6 +465,18 @@
                         <button class="btn" id="articleAnalyzeBtn">Анализировать по артикулу</button>
                     </div>
                     <div class="status" id="articleStatus"></div>
+                </div>
+            `;
+        }
+
+        if (tabName === 'competitors') {
+            html += `
+                <div class="article-input-area">
+                    <div class="row">
+                        <input type="text" id="competitorsInput" placeholder="Введите артикулы через запятую (например: 61472739, 157065568)">
+                        <button class="btn" id="competitorsAnalyzeBtn">Анализировать конкурентов</button>
+                    </div>
+                    <div class="status" id="competitorsStatus"></div>
                 </div>
             `;
         }
@@ -485,7 +497,7 @@
             analytics: ['Какие основные минусы?', 'Что чаще хвалят?', 'Сравни с конкурентами', 'Какой средний рейтинг?'],
             improve: ['Как улучшить карточку?', 'Что добавить в описание?', 'Советы по фото', 'Как повысить рейтинг?'],
             teach: ['Как поднять цену?', 'Что добавить для премиум-позиционирования?', 'Стратегия для дорогого товара'],
-            competitors: ['157065568, 157065569', '61472739, 157065568'],
+            competitors: ['61472739, 157065568', '157065568, 61472739'],
             replies: ['Товар не соответствует описанию, разочарован.', 'Долго ждал доставку.', 'Отличный товар, но дорого.'],
             unit: ['500, 200, 50, 30, 20', '1000, 400, 100, 50, 30'],
             marketing: ['Кокосовые сливки', 'Натуральный мёд', 'Органический кофе'],
@@ -567,9 +579,9 @@
             }
         });
 
-        // ====== АНАЛИТИКА (PDF + артикул) ======
+        // ====== АНАЛИТИКА ======
         if (tabName === 'analytics') {
-            // PDF обработка (оставляем как есть)
+            // PDF обработка (без изменений)
             const fileInput = document.getElementById('analytics-file');
             const uploadBtn = document.getElementById('analytics-upload-btn');
             const fileName = document.getElementById('analytics-file-name');
@@ -673,7 +685,63 @@
             });
         }
 
-        // ====== ПРОГНОЗ ЗАПАСОВ (с реальными данными) ======
+        // ====== КОНКУРЕНТЫ (с реальными данными) ======
+        if (tabName === 'competitors') {
+            const compInput = document.getElementById('competitorsInput');
+            const compBtn = document.getElementById('competitorsAnalyzeBtn');
+            const compStatus = document.getElementById('competitorsStatus');
+
+            compBtn.addEventListener('click', async function() {
+                const text = compInput.value.trim();
+                if (!text) { alert('Введите артикулы через запятую.'); return; }
+                const articles = text.split(',').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+                if (articles.length === 0) { alert('Введите хотя бы один артикул (только цифры).'); return; }
+                compStatus.textContent = '⏳ Получаю данные...';
+                compStatus.style.color = '#2563eb';
+                try {
+                    const allData = [];
+                    for (const article of articles) {
+                        try {
+                            const data = await fetchProductData(article);
+                            allData.push({ article, data });
+                        } catch (err) {
+                            allData.push({ article, error: err.message });
+                        }
+                    }
+                    // Формируем промпт на основе реальных данных
+                    let prompt = `Пользователь просит проанализировать конкурентов по артикулам: ${articles.join(', ')}.\n\n`;
+                    prompt += `Вот реальные данные с Wildberries:\n`;
+                    for (const item of allData) {
+                        if (item.error) {
+                            prompt += `- Артикул ${item.article}: ошибка получения данных (${item.error})\n`;
+                        } else {
+                            const p = item.data.product;
+                            prompt += `- Артикул ${item.article}: "${p.name}", цена ${p.price} ₽, рейтинг ${p.rating}, отзывов ${p.feedbacks}`;
+                            if (item.data.competitors.length > 0) {
+                                prompt += `, конкурентов: ${item.data.competitors.map(c => `${c.name} (${c.price} ₽)`).join('; ')}`;
+                            }
+                            prompt += '\n';
+                        }
+                    }
+                    prompt += `\nНа основе этих данных дай анализ конкурентов: сравни цены, рейтинги, отзывы, выдели слабые места каждого, дай рекомендации по улучшению позиций. Ответ структурируй (заголовки, таблицы, списки).`;
+                    const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.competitors);
+                    addMessage(tabName, messagesId, 'user', `🔍 Анализ конкурентов: ${text}`);
+                    addMessage(tabName, messagesId, 'ai', analysis, 'Данные с Wildberries и AI-анализ');
+                    compInput.value = '';
+                    compStatus.textContent = '✅ Готово!';
+                    compStatus.style.color = '#16a34a';
+                } catch (err) {
+                    compStatus.textContent = `❌ ${err.message}`;
+                    compStatus.style.color = '#dc2626';
+                }
+            });
+
+            compInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); compBtn.click(); }
+            });
+        }
+
+        // ====== ПРОГНОЗ ЗАПАСОВ ======
         if (tabName === 'stock') {
             const stockInput = document.getElementById('stockInput');
             const stockBtn = document.getElementById('stockAnalyzeBtn');
@@ -688,7 +756,6 @@
                 try {
                     const data = await fetchProductData(article);
                     const product = data.product;
-                    // Формируем запрос AI на основе реальных данных
                     const prompt = `На основе реальных данных товара с Wildberries:\n- Артикул: ${product.id}\n- Название: ${product.name}\n- Цена: ${product.price} ₽\n- Рейтинг: ${product.rating}\n- Количество отзывов: ${product.feedbacks}\n- Бренд: ${product.brand}\n- Продавец: ${product.seller}\n\nСоставь прогноз спроса на 12 месяцев (по месяцам) с рекомендациями по закупкам. Учти сезонность и текущие показатели. Ответ представь в виде таблицы (месяц → прогноз → рекомендация) и пояснений.`;
                     const analysis = await callDeepSeek(prompt, SYSTEM_PROMPTS.stock);
                     addMessage(tabName, messagesId, 'user', `📦 Прогноз для артикула ${article}`);
@@ -707,7 +774,7 @@
             });
         }
 
-        // ====== ПОИСК НИШ (с реальными данными) ======
+        // ====== ПОИСК НИШ ======
         if (tabName === 'niche') {
             const nicheInput = document.getElementById('niche-input');
             const nicheSend = document.getElementById('niche-send');
@@ -734,7 +801,6 @@
                     let filtered = words.filter(w => !stopWords.includes(w.toLowerCase()) && w.length > 2);
                     if (filtered.length > 0) searchQuery = filtered.join(' ');
 
-                    // Прямой парсинг поиска
                     const searchUrl = `https://search.wb.ru/exactmatch/ru/common/v18/search?appType=1&curr=rub&lang=ru&page=1&query=${encodeURIComponent(searchQuery)}&resultset=catalog&sort=popular&spp=30`;
                     const resp = await fetch(searchUrl);
                     if (!resp.ok) throw new Error('Не удалось выполнить поиск');
@@ -799,7 +865,7 @@
             });
         }
 
-        // ====== ЮНИТ-ЭКОНОМИКА (без AI) ======
+        // ====== ЮНИТ-ЭКОНОМИКА ======
         if (tabName === 'unit') {
             const unitInput = document.getElementById('unit-input');
             const unitSend = document.getElementById('unit-send');
@@ -954,7 +1020,7 @@
     }
 
     // ============================================================
-    // СИСТЕМНЫЕ ПРОМПТЫ (полные)
+    // СИСТЕМНЫЕ ПРОМПТЫ
     // ============================================================
     const SYSTEM_PROMPTS = {
         analytics: `Ты — эксперт по анализу данных Wildberries. Твоя задача — анализировать отзывы покупателей и давать структурированные выводы: средний рейтинг, частые плюсы и минусы, топ-10 слов с частотой и процентом. Отвечай на русском языке, используй заголовки ###, списки с -, жирный текст **текст**. Если данные удобно представить в таблице, используй Markdown-таблицы с | и ---. Ответ должен быть полезным, практичным и понятным для селлера.`,
@@ -1004,7 +1070,6 @@
             const prompts = {
                 improve: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с разбором проблемы, рекомендациями и пошаговым планом улучшения карточки.`,
                 teach: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ со стратегиями повышения цены, анализом рынка и конкретными шагами.`,
-                competitors: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с таблицей сравнения конкурентов, их слабыми местами и рекомендациями.`,
                 replies: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с анализом отзыва и 3 вариантами ответа (вежливый, официальный, дружелюбный).`,
                 marketing: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с анализом аудитории, 5 идеями продвижения с бюджетом и оценкой эффективности.`,
                 naming: (t) => `Пользователь спрашивает: "${t}". Дай детальный, структурированный ответ с 10 вариантами названий, 5 слоганами и 3 УТП с пояснениями.`,
